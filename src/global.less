@@ -2,7 +2,7 @@ html, body, div {
   margin: 0;
   padding: 0;
 }
-#root {
+:global #root {
   overflow: auto;
 }
 // @font-face {
@@ -24,7 +24,7 @@ html, body, div {
   url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');
 }
 
-.iconfont {
+:global .iconfont {
   font-family: "iconfont" !important;
   font-size: 16px;
   font-style: normal;
@@ -33,7 +33,7 @@ html, body, div {
 }
 
 /* 编辑器的高度*/
-.public-DraftEditor-content {
+:global .public-DraftEditor-content {
   // height: 1455px;
 }
 
@@ -53,12 +53,12 @@ html, body, div {
   color: inherit;
 }
 
-.formatBrush {
+:global .formatBrush {
   cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;
 }
 
 // toolbar
-.tooltip {
+:global .tooltip {
   position: relative;
 
   &:hover:after {

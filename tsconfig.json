@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "allowSyntheticDefaultImports": true,
     "module": "esnext",
+    "target": "esnext",
+    "lib": ["dom", "esnext"],
     "moduleResolution": "node",
-    "importHelpers": true,
     "jsx": "react",
     "esModuleInterop": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "strict": true,
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "allowSyntheticDefaultImports": true
-  }
+    "declaration": false,
+    "removeComments": true,
+    "noImplicitAny": false
+  },
+  "include": ["src", "typings"],
+  "exclude": ["node_modules", "lib", "es"]
 }

@@ -7,6 +7,7 @@ import {
   Modifier
 } from 'draft-js'
 import {OrderedSet} from 'immutable'
+// const { OrderedSet } = require（'immutable')
 
 const moveSelectionToEnd = (editorState: EditorState) => {
   const content = editorState.getCurrentContent()

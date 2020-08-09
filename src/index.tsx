@@ -31,6 +31,7 @@ const Index: React.FC<{}> = () => {
     <div
       className={style.page}
     >
+      <div className="124" />
       <ToolBar {...toolBarProps} />
       <div className={style.main}>
         <MyEditor {...editorProps}/>
