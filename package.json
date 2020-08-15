@@ -1,6 +1,6 @@
 {
   "name": "double-a-edito",
-  "private": true,
+  "private": false,
   "version": "0.0.9",
   "main": "lib/editor.esm.js",
   "scripts": {
