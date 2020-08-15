@@ -1,9 +1,14 @@
 {
+  "name": "double-d-edito",
   "private": true,
   "version": "1.0.0",
+  "main": "lib/editor.esm.js",
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "npm run build-esm && npm run build-cjs",
+    "build-esm": "rollup -c rollup-config/esm.config.js",
+    "build-cjs": "rollup -c rollup-config/cjs.config.js",
+    "dev": "npm run watch",
+    "watch": "rollup -w -c rollup-config/esm.config.js",
     "example": "cd example && umi dev",
     "lint:es": "eslint --ext .js src mock tests",
     "lint:ts": "tslint \"src/**/*.ts\" \"src/**/*.tsx\"",

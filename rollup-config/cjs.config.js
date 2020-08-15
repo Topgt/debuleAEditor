@@ -1,3 +1,4 @@
+
 import babel from 'rollup-plugin-babel'
 import postcss from 'rollup-plugin-postcss'
 import typescript from 'rollup-plugin-typescript2'
@@ -7,7 +8,7 @@ import resolve from 'rollup-plugin-node-resolve'
 export default {
   input: './src/index.tsx',
   output: {
-    file: './lib/edirtorApp.js',
+    file: './lib/editor.cjs.js',
     format: 'cjs'
   },
   plugins: [
@@ -22,7 +23,8 @@ export default {
     }),
     postcss({
       modules: true,
-    })],
+    })
+  ],
   external: ["react"],
   watch: {
     exclude: 'node_modules/**'
