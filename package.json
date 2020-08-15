@@ -67,5 +67,23 @@
   },
   "engines": {
     "node": ">=8.0.0"
-  }
+  },
+  "description": "draftjs",
+  "directories": {
+    "example": "example",
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Topgt/debuleAEditor.git"
+  },
+  "keywords": [
+    "draftjs"
+  ],
+  "author": "lambda910",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Topgt/debuleAEditor/issues"
+  },
+  "homepage": "https://github.com/Topgt/debuleAEditor#readme"
 }
