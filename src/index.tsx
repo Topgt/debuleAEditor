@@ -1,7 +1,7 @@
 import React from 'react'
 import {EditorState, RichUtils} from 'draft-js'
 import {Events, Stack} from './utils/index'
-import MyEditor from './my-editor'
+import MyEditor from './editor'
 import ToolBar from './component/tool-bar'
 import {IMyEditor, IToolBar, IeditoRef} from './index.d'
 import style from './style.less'
