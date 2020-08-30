@@ -2,8 +2,10 @@ import React from 'react'
 import classnames from 'classnames'
 import _ from 'lodash'
 import Select from '../select'
+import Popover from '../popover'
 import ColorPanel from '../color-panel'
 import Icon from '../icon'
+import Input from '../input'
 import {IToolBar} from './index.d'
 import style from './style.less'
 import {toolbarArea, Iarea} from '../../config/tool-bar-config'
@@ -134,6 +136,20 @@ const ToolBar: React.FC<IToolBar> = (props) => {
             lable={lable}
             icon={icon}
           />)
+      case 'popover': 
+          return areas.map(
+            ({icon, lable,}, idx) => 
+              <Popover 
+                key={`${key}-${idx}`} 
+                icon={icon} 
+                tooltip={lable}
+              >
+                <Input onBlur={(e) => {
+                  const inputText = e.target.value
+                  event.fire(`${action}`, inputText)
+                }} />
+              </Popover>
+          )
       default :
         return ''
     }

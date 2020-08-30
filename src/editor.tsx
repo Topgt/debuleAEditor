@@ -93,9 +93,8 @@ const MyEditor: React.FC<ImyEditor> = (props) => {
         setFormatBrush(true)
       }
     })
-    event.on('addEntity', (action: string) => {
-      // const newState = RichUtils.toggleBlockType(getCurrentStart(), 'atomic')
-      const newState = addEntity(getCurrentStart(), 'http://localhost:8000/static/code-competency-4.527bc81f.png', 'IMAGE')
+    event.on('addEntity', (atomic: string) => {
+      const newState = addEntity(getCurrentStart(), atomic, 'IMAGE')
       setEditorState(newState)
       return newState
     })
@@ -156,8 +155,6 @@ const MyEditor: React.FC<ImyEditor> = (props) => {
       <Editor
         customStyleMap={customStyleMap}
         blockRenderMap={DefaultDraftBlockRenderMap.merge(blockRenderMap)}
-        // blockStyleFn={blockStyleFn}
-        // blockRendererFn={blockRendererFn}
         {...pluginHooks}
         editorState={editorState}
         onChange={change}

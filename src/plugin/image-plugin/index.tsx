@@ -1,6 +1,7 @@
 import React from 'react'
 import { ContentBlock } from 'draft-js'
 import {IpluginProps} from '../plugin.d'
+import Image from './image'
 
 export default (props) => {
   const {getCurrentStart, setEditorState, event, editorRef} = props
@@ -11,9 +12,14 @@ export default (props) => {
         const entity = block.getEntityAt(0)
         if (!entity) return null
         const type = contentState.getEntity(entity).getType()
+        const data = contentState.getEntity(entity).getData()
         if (type === 'IMAGE' || type === 'image') {
+          const {src} = data || {}
           return {
-            component: () => <img src="http://localhost:8000/static/code-competency-4.527bc81f.png"/>,
+            component: Image,
+            props: {
+              src
+            },
             editable: false,
           }
         }

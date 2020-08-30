@@ -16,7 +16,7 @@
     "precommit": "lint-staged"
   },
   "dependencies": {
-    "antd": "^3.19.5",
+    "antd": "^4.6.1",
     "classnames": "^2.2.6",
     "draft-js": "^0.11.6",
     "immutable": "^4.0.0-rc.12",
@@ -53,7 +53,7 @@
     "lodash": "^4.17.19",
     "draft-js": "^0.11.6",
     "react": "^16.13.1",
-    "antd": "^3.19.5"
+    "antd": "^4.6.1"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

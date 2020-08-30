@@ -23,7 +23,7 @@ export interface ItoolbarArea {
 const blockRenderMap = Immutable.Map({
   'unstyled': { // blockType, contentBlock.type
     element: 'div',  // 行标签
-    wrapper: <BlockWrapper />,
+    wrapper: <div />,
     // 当Draft解析粘贴的HTML时，它将从HTML元素映射回Draft块类型。如果要指定映射到特定块类型的其他HTML元素，则可以添加aliasedElements数组中。
     aliasedElements: ['p'],
   },
@@ -208,7 +208,7 @@ export const toolbarArea: ItoolbarArea = [
   }, 
   {
     action: 'addEntity',
-    type: 'btn',
+    type: 'popover',
     initValue: JSON.stringify({textAlign: 'left'}),
     areas: [
       {lable: '插入图片', icon: <Icon fontIcon="&#xe64a;" />, value: 'image'},
