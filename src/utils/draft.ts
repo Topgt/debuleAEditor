@@ -7,6 +7,7 @@ import {
   Modifier
 } from 'draft-js'
 import {OrderedSet} from 'immutable'
+import { defaults } from 'lodash'
 // const { OrderedSet } = require（'immutable')
 
 const moveSelectionToEnd = (editorState: EditorState) => {
@@ -119,11 +120,55 @@ const addEntity = (editorState: EditorState, url: string, type: string) => {
   )
 }
 
+const createFnHooks = (methodName: string, plugins: any[]) => (...newArgs) => {
+  if (methodName === 'blockRendererFn') {
+    let block: {[key: string]: any} = { props: {} }
+    plugins.forEach(plugin => {
+      const result = typeof plugin === 'function'
+                      ? plugin(...newArgs)
+                      : undefined
+      if (result !== undefined && result !== null) {
+        const { props: pluginProps, ...pluginRest } = result
+        const { props, ...rest } = block
+        block = {
+          ...rest,
+          ...pluginRest,
+          props: { ...props, ...pluginProps },
+        };
+      }
+    });
+
+    return block.component ? block : false;
+  } else if (methodName === 'blockStyleFn') {
+    let styles;
+    plugins.forEach(plugin => {
+      const result = typeof plugin[methodName] === 'function'
+                      ? plugin[methodName](...newArgs)
+                      : undefined
+      if (result !== undefined && result !== null) {
+        styles = (styles ? `${styles} ` : '') + result;
+      }
+    });
+
+    return styles || '';
+  }
+
+  let result
+  const wasHandled = plugins.some(plugin => {
+    result = typeof plugin[methodName] === 'function'
+                ? plugin[methodName](...newArgs)
+                : undefined
+    return result !== undefined;
+  });
+  return wasHandled ? result : false
+}
+
 export {
   moveSelectionToEnd,
   removeInlineStyle,
   removeBlockStyle,
   applyInlineStyle,
   addEntity,
-  insertText
+  insertText,
+  createFnHooks
 }

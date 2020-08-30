@@ -3,7 +3,8 @@ import {EditorState, RichUtils} from 'draft-js'
 import {Events, Stack} from './utils/index'
 import MyEditor from './editor'
 import ToolBar from './component/tool-bar'
-import {IMyEditor, IToolBar, IeditoRef} from './index.d'
+import imagePlugin from './plugin/image-plugin'
+import {ImyEditor, IToolBar, IeditoRef} from './index.d'
 import style from './style.less'
 import './global.less'
 
@@ -20,7 +21,8 @@ const Index: React.FC<{}> = () => {
     event: eventRef.current,
   }
 
-  const editorProps: IMyEditor = {
+  const editorProps: ImyEditor = {
+    plugins: [ imagePlugin ],
     event: eventRef.current,
     stack: stackRef.current,
     ederiotRef: (editor) => editorRef.current = editor,

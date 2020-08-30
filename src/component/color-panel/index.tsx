@@ -2,6 +2,7 @@ import React from 'react'
 import classnames from 'classnames'
 import Select from '../select'
 import {IareasValue} from '../../config/tool-bar-config'
+import Icon from '../icon'
 import style from './style.less'
 
 interface IcolorPanel{
@@ -9,20 +10,20 @@ interface IcolorPanel{
   disabled: boolean
   areas: IareasValue
   lable?: string
-  fontIcon?: string
+  icon?: JSX.Element
   initValue?: string
   value?: string
 }
 
 const ColorPanel: React.FC<IcolorPanel> = (props) => {
-  const {disabled, change, areas, lable, fontIcon, value, initValue='#000000'} = props
+  const {disabled, change, areas, lable, icon, value, initValue='#000000'} = props
   const currentValue = value || initValue
   const [selectColor, setColor] = React.useState(currentValue)
   React.useEffect(() => setColor(currentValue), [currentValue])
 
   const colorLable = (
     <span className={style.lable}>
-      <span className="iconfont" dangerouslySetInnerHTML={{__html: `${fontIcon}`}} />
+      {icon}
       <em style={{backgroundColor: selectColor}} />
     </span>)
   return (
@@ -62,7 +63,7 @@ const ColorPanel: React.FC<IcolorPanel> = (props) => {
                     />
                     {
                         v === colorHex
-                          ? <i className="iconfont" dangerouslySetInnerHTML={{__html: '&#xe61c;'}}/>
+                          ? <Icon fontIcon="&#xe61c;" />
                           : ''
                       }
                   </span>

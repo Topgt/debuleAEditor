@@ -12,10 +12,11 @@ declare module 'react' {
 
 type IeditoRef = Editor | null
 
-interface IMyEditor {
+interface ImyEditor {
   event: Events
   stack: Stack<EditorState>
   editorState: EditorState
+  plugins: any[]
   setEditorState: (state: EditorState) => void
   ederiotRef: (editor:Editor) => Editor
   onChange?: (state: EditorState) => void
@@ -28,7 +29,7 @@ interface IToolBar {
 }
 
 export {
-  IMyEditor,
+  ImyEditor,
   IToolBar,
   IeditoRef,
 }

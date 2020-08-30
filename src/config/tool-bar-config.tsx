@@ -2,14 +2,15 @@ import React from 'react'
 import Immutable from 'immutable'
 import _ from 'lodash'
 import BlockWrapper from '../component/block-wrapper'
+import Icon from '../component/icon'
 
-export type IareasValue = {value: string | string[], fontIcon?: string, lable?: string}[]
+export type IareasValue = {value: string | string[], icon?: JSX.Element, lable?: string}[]
 export interface Iarea {
   action: string
   type: string
   initValue?: string
   lable?: string
-  fontIcon?: string
+  icon?: JSX.Element
   areas: IareasValue
 }
 export type Iareas = Iarea | Iarea[]
@@ -125,16 +126,16 @@ export const toolbarArea: ItoolbarArea = [
     action: 'changeEditorState',
     type: 'btn',
     areas: [
-      {lable: '保存', fontIcon: '&#xe6fe;', value: 'seve'},
-      {lable: '撤销', fontIcon: '&#xe629;', value: 'undo'},
-      {lable: '重做', fontIcon: '&#xe62a;', value: 'redo'}
+      {lable: '保存', icon: <Icon fontIcon="&#xe6fe;" />, value: 'seve'},
+      {lable: '撤销', icon: <Icon fontIcon="&#xe629;" />, value: 'undo'},
+      {lable: '重做', icon: <Icon fontIcon="&#xe62a;" />, value: 'redo'}
     ]
   }, {
     action: 'format',
     type: 'btn',
     areas: [
-      {lable: '格式刷', fontIcon: '&#xe617;', value: 'applyStyle'},
-      {lable: '清除格式', fontIcon: '&#xe65b;', value: 'clearStyle'},
+      {lable: '格式刷', icon: <Icon fontIcon="&#xe617;" />, value: 'applyStyle'},
+      {lable: '清除格式', icon: <Icon fontIcon="&#xe65b;" />, value: 'clearStyle'},
     ]
   }, [{
     action: 'toggleBlockType',
@@ -142,13 +143,13 @@ export const toolbarArea: ItoolbarArea = [
     initValue: 'unstyled',
     lable: '文本和标题',
     areas: [
-      {fontIcon: '', lable: '<div style="margin: 0; display: inline-block; min-width: 120px;">正文</div>', value: 'unstyled'},
-      {fontIcon: '', lable: '<h1 style="margin: 0; display: inline-block; min-width: 120px;">标题 1</h1>', value: 'header-one'},
-      {fontIcon: '', lable: '<h2 style="margin: 0; display: inline-block; min-width: 120px;">标题 2</h2>', value: 'header-two'},
-      {fontIcon: '', lable: '<h3 style="margin: 0; display: inline-block; min-width: 120px;">标题 3</h3>', value: 'header-three'},
-      {fontIcon: '', lable: '<h4 style="margin: 0; display: inline-block; min-width: 120px;">标题 4</h4>', value: 'header-four'},
-      {fontIcon: '', lable: '<h5 style="margin: 0; display: inline-block; min-width: 120px;">标题 5</h4>', value: 'header-five'},
-      {fontIcon: '', lable: '<h6 style="margin: 0; display: inline-block; min-width: 120px;">标题 6</h4>', value: 'header-six'},
+      {lable: '<div style="margin: 0; display: inline-block; min-width: 120px;">正文</div>', value: 'unstyled'},
+      {lable: '<h1 style="margin: 0; display: inline-block; min-width: 120px;">标题 1</h1>', value: 'header-one'},
+      {lable: '<h2 style="margin: 0; display: inline-block; min-width: 120px;">标题 2</h2>', value: 'header-two'},
+      {lable: '<h3 style="margin: 0; display: inline-block; min-width: 120px;">标题 3</h3>', value: 'header-three'},
+      {lable: '<h4 style="margin: 0; display: inline-block; min-width: 120px;">标题 4</h4>', value: 'header-four'},
+      {lable: '<h5 style="margin: 0; display: inline-block; min-width: 120px;">标题 5</h4>', value: 'header-five'},
+      {lable: '<h6 style="margin: 0; display: inline-block; min-width: 120px;">标题 6</h4>', value: 'header-six'},
     ]
   }, {
     action: 'toggleInlineStyle',
@@ -156,42 +157,42 @@ export const toolbarArea: ItoolbarArea = [
     initValue: '12px',
     lable: '字号',
     areas: [
-      {lable: '12px', fontIcon: '', value: '12px'},
-      {lable: '13px', fontIcon: '', value: '13px'},
-      {lable: '14px', fontIcon: '', value: '14px'},
-      {lable: '15px', fontIcon: '', value: '15px'},
-      {lable: '16px', fontIcon: '', value: '16px'},
-      {lable: '19px', fontIcon: '', value: '19px'},
-      {lable: '22px', fontIcon: '', value: '22px'},
-      {lable: '24px', fontIcon: '', value: '24px'},
-      {lable: '29px', fontIcon: '', value: '29px'},
-      {lable: '32px', fontIcon: '', value: '32px'},
-      {lable: '40px', fontIcon: '', value: '40px'},
-      {lable: '48px', fontIcon: '', value: '48px'},
+      {lable: '12px', value: '12px'},
+      {lable: '13px', value: '13px'},
+      {lable: '14px', value: '14px'},
+      {lable: '15px', value: '15px'},
+      {lable: '16px', value: '16px'},
+      {lable: '19px', value: '19px'},
+      {lable: '22px', value: '22px'},
+      {lable: '24px', value: '24px'},
+      {lable: '29px', value: '29px'},
+      {lable: '32px', value: '32px'},
+      {lable: '40px', value: '40px'},
+      {lable: '48px', value: '48px'},
     ]
   }], {
     action: 'toggleInlineStyle',
     type: 'btn',
     areas: [
-      {lable: '加粗', fontIcon: '&#xe660;', value: 'BOLD'},
-      {lable: '斜体', fontIcon: '&#xe700;', value: 'ITALIC'},
-      {lable: '删除线', fontIcon: '&#xe664;', value: 'STRIKETHROUGH'},
-      {lable: '下划线', fontIcon: '&#xe701;', value: 'UNDERLINE'},
-      {lable: '更多文本样式', fontIcon: '&#xe632;', value: 'dd'},
+      {lable: '加粗', icon: <Icon fontIcon="&#xe660;" />, value: 'BOLD'},
+      {lable: '斜体', icon: <Icon fontIcon="&#xe700;" />, value: 'ITALIC'},
+      {lable: '删除线', icon: <Icon fontIcon="&#xe664;" />, value: 'STRIKETHROUGH'},
+      {lable: '下划线', icon: <Icon fontIcon="&#xe701;" />, value: 'UNDERLINE'},
+      {lable: '更多文本样式', icon: <Icon fontIcon="&#xe632;" />, value: 'dd'},
     ]
   }, [{
     action: 'toggleInlineStyle',
     type: 'color',
     initValue: '#000000',
     lable: '字体颜色',
-    fontIcon: '&#xe601;',
+    icon: <Icon fontIcon="&#xe601;" />,
     areas: colors
   }, {
     action: 'toggleInlineStyle',
     type: 'background',
     initValue: '#ffffff',
     lable: '背景色',
-    fontIcon: '&#xe6f8;',
+    icon: <Icon fontIcon="&#xe6f8;" />,
     areas: colors
   }],
   {
@@ -200,9 +201,9 @@ export const toolbarArea: ItoolbarArea = [
     initValue: JSON.stringify({textAlign: 'left'}),
     lable: '对齐方式',
     areas: [
-      {lable: '左对齐', fontIcon: '&#xe6cf;', value: JSON.stringify({textAlign: 'left'})},
-      {lable: '居中对齐', fontIcon: '&#xe73e;', value: JSON.stringify({textAlign: 'center'})},
-      {lable: '右对齐', fontIcon: '&#xe6cd;', value: JSON.stringify({textAlign: 'right'})},
+      {lable: '左对齐', icon: <Icon fontIcon="&#xe6cf;" />, value: JSON.stringify({textAlign: 'left'})},
+      {lable: '居中对齐', icon: <Icon fontIcon="&#xe73e;" />, value: JSON.stringify({textAlign: 'center'})},
+      {lable: '右对齐', icon: <Icon fontIcon="&#xe6cd;" />, value: JSON.stringify({textAlign: 'right'})},
     ]
   }, 
   {
@@ -210,9 +211,9 @@ export const toolbarArea: ItoolbarArea = [
     type: 'btn',
     initValue: JSON.stringify({textAlign: 'left'}),
     areas: [
-      {lable: '插入图片', fontIcon: '&#xe64a;', value: 'image'},
-      {lable: '插入表格', fontIcon: '&#xe6cc;', value: JSON.stringify({textAlign: 'center'})},
-      {lable: '插入公示', fontIcon: '&#xe600;', value: JSON.stringify({textAlign: 'right'})},
+      {lable: '插入图片', icon: <Icon fontIcon="&#xe64a;" />, value: 'image'},
+      {lable: '插入表格', icon: <Icon fontIcon="&#xe6cc;" />, value: JSON.stringify({textAlign: 'center'})},
+      {lable: '插入公示', icon: <Icon fontIcon="&#xe600;" />, value: JSON.stringify({textAlign: 'right'})},
     ]
   }
 ]

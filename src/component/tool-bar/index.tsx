@@ -3,6 +3,7 @@ import classnames from 'classnames'
 import _ from 'lodash'
 import Select from '../select'
 import ColorPanel from '../color-panel'
+import Icon from '../icon'
 import {IToolBar} from './index.d'
 import style from './style.less'
 import {toolbarArea, Iarea} from '../../config/tool-bar-config'
@@ -45,16 +46,13 @@ const ToolBar: React.FC<IToolBar> = (props) => {
           event.fire(`${action}`, value)
         }}
       >
-        <div 
-          className="iconfont"
-          dangerouslySetInnerHTML={{__html: `${area.fontIcon}`}} 
-        />
+        {area.icon }
       </button>
     )
   } 
   const renderToolbarArea: (t: Iarea, idx: number | string)=>React.ReactNode = (area, key) => {
     let disabled = false
-    const {action, type, areas, initValue, lable, fontIcon} = area
+    const {action, type, areas, initValue, lable, icon} = area
     let currentValue = undefined
     if (lable === '文本和标题') {
       currentValue = blockType
@@ -92,13 +90,13 @@ const ToolBar: React.FC<IToolBar> = (props) => {
           >
             {
               areas.map(
-                ({fontIcon, lable='', value}, i) => (
+                ({icon, lable='', value}, i) => (
                   <Select.Option
                     key={`${key}-${i}`}
                     value={(value as string)}
                     lable={
-                      fontIcon
-                        ? <span className="iconfont" dangerouslySetInnerHTML={{__html: `${fontIcon}`}} />
+                      icon
+                        ? icon
                         : <span style={{width: '45px', display: 'inline-block'}} dangerouslySetInnerHTML={{__html: lable.replace(/<[^>]+>/g,"")}} />
                     }
                   >{
@@ -111,11 +109,11 @@ const ToolBar: React.FC<IToolBar> = (props) => {
                           }
                         }}
                       >
-                        <span className="iconfont" dangerouslySetInnerHTML={{__html: `${fontIcon}`}} />
+                        {icon}
                         <span style={{minWidth: '75px', display: 'inline-block', marginLeft: '8px', verticalAlign: 'middle'}} dangerouslySetInnerHTML={{__html: `${lable}`}} />
                         {
                           v === value
-                            ? <span className="iconfont" style={{verticalAlign: 'middle'}}>&#xe61c;</span>
+                            ? <Icon fontIcon="&#xe61c;" />
                             : ''
                         }
                       </span>)
@@ -134,7 +132,7 @@ const ToolBar: React.FC<IToolBar> = (props) => {
             change={(s) => event.fire(`${action}`, `${type}-${s}`)}
             areas={areas}
             lable={lable}
-            fontIcon={fontIcon}
+            icon={icon}
           />)
       default :
         return ''

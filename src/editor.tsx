@@ -9,14 +9,15 @@ import {
   convertToRaw
 } from 'draft-js'
 import {Map} from 'immutable'
+import _ from 'lodash'
 import classNames from 'classnames'
 import {customStyleMap, blockRenderMap} from './config/tool-bar-config'
-import {IMyEditor, IeditoRef} from './index.d'
-import {insertText, removeInlineStyle, applyInlineStyle, addEntity} from './utils/index'
+import {ImyEditor, IeditoRef} from './index.d'
+import {insertText, removeInlineStyle, applyInlineStyle, addEntity, createFnHooks} from './utils/index'
 import style from './style.less'
 
-const MyEditor: React.FC<IMyEditor> = (props) => {
-  const {ederiotRef, editorState, setEditorState, onChange, event, stack} = props
+const MyEditor: React.FC<ImyEditor> = (props) => {
+  const {ederiotRef, editorState, setEditorState, onChange, event, stack, plugins} = props
   // 点击格式刷分两段，第一段设置为true
   const [formatBrush, setFormatBrush] = React.useState(false)
   const editorRef = React.useRef((null as IeditoRef))
@@ -25,33 +26,57 @@ const MyEditor: React.FC<IMyEditor> = (props) => {
   React.useEffect(() => {
     stateRef.current = editorState
   }, [editorState])
+  const getCurrentStart = () => stateRef.current
+
+  const [pluginHooks, setPluginHooks] = React.useState(({} as any))
+  React.useEffect(() => {
+    const hooks: any = {}
+    const fnHookKeys: any = {}
+    const params = {getCurrentStart, setEditorState, event, editorRef}
+    plugins.forEach(plugin => {
+      const result = typeof plugin === 'function' && plugin(params)
+      _.keys(result).forEach(attrName => {
+        const isFnHookKey = /.*Fn$/.test(attrName)
+        if (isFnHookKey) {
+          if (!fnHookKeys[attrName]) {
+            fnHookKeys[attrName] = []
+          }
+          fnHookKeys[attrName].push(result[attrName])
+        }
+      })
+    })
+    _.keys(fnHookKeys).forEach(attrName => {
+      hooks[attrName] = createFnHooks(attrName, fnHookKeys[attrName])
+    })
+    setPluginHooks(hooks)
+  }, [])
 
   // 注册事件监听
   React.useEffect(() => {
     event.on('toggleInlineStyle', (style: string) => {
-      const selectState = stateRef.current.getSelection()
+      const selectState = getCurrentStart().getSelection()
       // 如何没有选择文字就设置样式，先插入一个看不见的字符应用该样式。这是为了解决先设置样式再输入中文样式会丢失的问题
       if ((selectState.getEndOffset()-selectState.getStartOffset()) === 0) {
         // 注意，这并不少一个空字符串，这个字符串中包含了一个在html中不显示的&lrm;
-        const state = insertText(stateRef.current, '‎',  [style])
+        const state = insertText(getCurrentStart(), '‎',  [style])
         setEditorState(state)
         setTimeout(() => {
           editorRef.current && editorRef.current.focus()
         })
         return state
       }
-      const newState = RichUtils.toggleInlineStyle(stateRef.current, (style as string))
+      const newState = RichUtils.toggleInlineStyle(getCurrentStart(), (style as string))
       setEditorState(newState)
       return newState
     })
     event.on('toggleBlockType', (blockType: any) => {
-      const newState = RichUtils.toggleBlockType(stateRef.current, (blockType as string))
+      const newState = RichUtils.toggleBlockType(getCurrentStart(), (blockType as string))
       setEditorState(newState)
       return newState
     })
     event.on('addBlockType', (blockType: any) => {
-      const currentContentState = stateRef.current.getCurrentContent()
-      const selectState = stateRef.current.getSelection()
+      const currentContentState = getCurrentStart().getCurrentContent()
+      const selectState = getCurrentStart().getSelection()
       const blockData = Map(JSON.parse(blockType))
       const contentState = Modifier.mergeBlockData(currentContentState, selectState, blockData)
       let state = EditorState.createWithContent(contentState)
@@ -61,7 +86,7 @@ const MyEditor: React.FC<IMyEditor> = (props) => {
     })
     event.on('format', (action: string) => {
       if (action === 'clearStyle') {
-        const state = removeInlineStyle(stateRef.current, /.*/)
+        const state = removeInlineStyle(getCurrentStart(), /.*/)
         setEditorState(state)
         return state
       } else if (action === 'applyStyle') {
@@ -69,8 +94,8 @@ const MyEditor: React.FC<IMyEditor> = (props) => {
       }
     })
     event.on('addEntity', (action: string) => {
-      // const newState = RichUtils.toggleBlockType(stateRef.current, 'atomic')
-      const newState = addEntity(stateRef.current, 'http://localhost:8000/static/code-competency-4.527bc81f.png', 'IMAGE')
+      // const newState = RichUtils.toggleBlockType(getCurrentStart(), 'atomic')
+      const newState = addEntity(getCurrentStart(), 'http://localhost:8000/static/code-competency-4.527bc81f.png', 'IMAGE')
       setEditorState(newState)
       return newState
     })
@@ -84,7 +109,7 @@ const MyEditor: React.FC<IMyEditor> = (props) => {
         const state = stack.redo()
         state && setEditorState((state as EditorState))
       } else if (action === 'seve') {
-        const contentState = stateRef.current.getCurrentContent()
+        const contentState = getCurrentStart().getCurrentContent()
         const json = convertToRaw(contentState)
         // console.log(json)
       }
@@ -113,29 +138,6 @@ const MyEditor: React.FC<IMyEditor> = (props) => {
     setEditorState(state)
   }
 
-  // 每次变化都会调用，根据不同的key添加不同的className
-  const blockStyleFn = (contentBlock: ContentBlock) => {
-    return ''
-  }
-
-  const blockRendererFn = (contentBlock: ContentBlock) => {
-    if (contentBlock.getType() === 'atomic') {
-      const contentState = stateRef.current.getCurrentContent()
-      const entity = contentBlock.getEntityAt(0)
-      if (!entity) return null
-      const type = contentState.getEntity(entity).getType()
-      if (type === 'IMAGE' || type === 'image') {
-        return {
-          component: () => <img src="http://localhost:8000/static/code-competency-4.527bc81f.png"/>,
-          editable: false,
-        }
-      }
-      return null
-    }
-
-    return null
-  }
-
   return (
     <div
       className={classNames({formatBrush: formatBrush}, style.editor)}
@@ -154,8 +156,9 @@ const MyEditor: React.FC<IMyEditor> = (props) => {
       <Editor
         customStyleMap={customStyleMap}
         blockRenderMap={DefaultDraftBlockRenderMap.merge(blockRenderMap)}
-        blockStyleFn={blockStyleFn}
-        blockRendererFn={blockRendererFn}
+        // blockStyleFn={blockStyleFn}
+        // blockRendererFn={blockRendererFn}
+        {...pluginHooks}
         editorState={editorState}
         onChange={change}
         ref={editor => {

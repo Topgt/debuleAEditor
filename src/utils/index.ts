@@ -6,7 +6,8 @@ import {
   removeInlineStyle,
   applyInlineStyle,
   addEntity,
-  insertText
+  insertText,
+  createFnHooks
 } from './draft'
 
 export {
@@ -17,5 +18,6 @@ export {
   removeInlineStyle,
   applyInlineStyle,
   addEntity,
-  insertText
+  insertText,
+  createFnHooks
 }
