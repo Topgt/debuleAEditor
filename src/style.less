@@ -1,6 +1,7 @@
 .page {
   display: flex;
   height: 100%;
+  overflow: hidden;
   flex-direction: column;
   align-items: center;
   position: relative;
@@ -10,16 +11,14 @@
     width: 100%;
     overflow-y: auto;
     padding-bottom: 64px;
-    display: flex;
-    justify-content: center;
 
     .editor {
       border: 1px solid #e8e8e8;
       border-radius: 3px;
       box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);
       width: 872px;
-      height: 1455px;
-      margin-top: 16px;
+      min-height: 1455px;
+      margin: 16px auto 0 auto;
       padding: 20px 60px 90px 60px;
       background-color: white;
     }
