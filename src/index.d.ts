@@ -18,7 +18,6 @@ interface ImyEditor {
   editorState: EditorState
   plugins: any[]
   setEditorState: (state: EditorState) => void
-  ederiotRef: (editor:Editor) => Editor
   onChange?: (state: EditorState) => void
 }
 

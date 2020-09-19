@@ -100,19 +100,19 @@ const insertText = (editorState: EditorState, text='‎',  styles: string[]) => 
   return nextState
 }
 
-const addEntity = (editorState: EditorState, url: string, type: string) => {
+const addEntity = (editorState: EditorState, atomic: string, type: string) => {
   const urlType = type.toLocaleUpperCase()
   const contentState = editorState.getCurrentContent()
   const contentStateWithEntity = contentState.createEntity(
     urlType,
     'IMMUTABLE',
-    {src: url }
+    {src: atomic }
   )
   const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
   const newEditorState = AtomicBlockUtils.insertAtomicBlock(
     editorState,
     entityKey,
-    ' '
+    `add-${type}`
   )
   return EditorState.forceSelection(
     newEditorState,

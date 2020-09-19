@@ -17,10 +17,10 @@ export default (props) => {
           const {src} = data || {}
           return {
             component: Image,
+            editable: false,
             props: {
               src
             },
-            editable: false,
           }
         }
         return null

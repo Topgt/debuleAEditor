@@ -16,11 +16,13 @@ import {ImyEditor, IeditoRef} from './index.d'
 import {insertText, removeInlineStyle, applyInlineStyle, addEntity, createFnHooks} from './utils/index'
 import style from './style.less'
 
-const MyEditor: React.FC<ImyEditor> = (props) => {
-  const {ederiotRef, editorState, setEditorState, onChange, event, stack, plugins} = props
+const MyEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props, editorRef: React.MutableRefObject<Editor>) => {
+  if(typeof editorRef === 'function') {
+    (editorRef as any)(editor => editorRef = editor)
+  }
+  const {editorState, setEditorState, onChange, event, stack, plugins} = props
   // 点击格式刷分两段，第一段设置为true
   const [formatBrush, setFormatBrush] = React.useState(false)
-  const editorRef = React.useRef((null as IeditoRef))
   // 解决闭包内拿不到最新editorState
   const stateRef = React.useRef(editorState)
   React.useEffect(() => {
@@ -158,13 +160,10 @@ const MyEditor: React.FC<ImyEditor> = (props) => {
         {...pluginHooks}
         editorState={editorState}
         onChange={change}
-        ref={editor => {
-          editorRef.current = editor
-          ederiotRef((editor as any))
-        }}
+        ref={editorRef}
       />
     </div>
   )
 }
 
-export default MyEditor
+export default React.forwardRef(MyEditor)

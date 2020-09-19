@@ -25,7 +25,6 @@ const Index: React.FC<{}> = () => {
     plugins: [ imagePlugin ],
     event: eventRef.current,
     stack: stackRef.current,
-    ederiotRef: (editor) => editorRef.current = editor,
     editorState,
     setEditorState
   }
@@ -35,7 +34,7 @@ const Index: React.FC<{}> = () => {
     >
       <ToolBar {...toolBarProps} />
       <div className={style.main}>
-        <MyEditor {...editorProps}/>
+        <MyEditor ref={editorRef} {...editorProps}/>
       </div>
       
     </div>)
