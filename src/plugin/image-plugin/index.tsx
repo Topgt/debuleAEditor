@@ -7,7 +7,6 @@ export default (props) => {
   const {getCurrentStart, setEditorState, event, editorRef} = props
   return {
     handleKeyCommand: (command, editorState) => {
-      debugger
       let newState;
       switch (command) {
         case 'backspace':

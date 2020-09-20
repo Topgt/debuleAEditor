@@ -6,8 +6,8 @@ import {
   CharacterMetadata,
   Modifier
 } from 'draft-js'
-import {OrderedSet} from 'immutable'
-import { defaults } from 'lodash'
+import {OrderedSet, OrderedMap} from 'immutable'
+import _ from 'lodash'
 // const { OrderedSet } = require（'immutable')
 
 const moveSelectionToEnd = (editorState: EditorState) => {
@@ -109,11 +109,22 @@ const addEntity = (editorState: EditorState, atomic: string, type: string) => {
     {src: atomic }
   )
   const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
-  const newEditorState = AtomicBlockUtils.insertAtomicBlock(
+  let newEditorState = AtomicBlockUtils.insertAtomicBlock(
     editorState,
     entityKey,
     `add-${type}`
   )
+
+  const nextContentState = newEditorState.getCurrentContent()
+  const blocks = nextContentState.getBlockMap()
+  const currentBlock = blocks.find(block => block.getEntityAt(0) === entityKey)
+  const breforeBlock = nextContentState.getBlockBefore(currentBlock.getKey())
+  // 插入atomic后，会前后出现空行，所以这里如果atomic的前面一行是空行就把他删除
+  if (breforeBlock && breforeBlock.getText() === '') {
+    const newBlocks = blocks.filter(block => block.getKey() !== breforeBlock.getKey())
+    const newContentState = (nextContentState.set('blockMap', newBlocks) as any)
+    newEditorState = EditorState.createWithContent(newContentState)
+  }
   return EditorState.forceSelection(
     newEditorState,
     newEditorState.getCurrentContent().getSelectionAfter()
