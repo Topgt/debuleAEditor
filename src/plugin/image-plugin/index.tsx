@@ -1,11 +1,31 @@
 import React from 'react'
-import { ContentBlock } from 'draft-js'
+import { ContentBlock, RichUtils } from 'draft-js'
 import {IpluginProps} from '../plugin.d'
 import Image from './image'
 
 export default (props) => {
   const {getCurrentStart, setEditorState, event, editorRef} = props
   return {
+    handleKeyCommand: (command, editorState) => {
+      debugger
+      let newState;
+      switch (command) {
+        case 'backspace':
+          newState = RichUtils.onBackspace(editorState);
+          break
+        case 'delete':
+          newState = RichUtils.onDelete(editorState);
+          break
+        default:
+          return 'not-handled'
+      }
+      if (newState != null) {
+        setEditorState(newState)
+        return 'handled'
+      }
+      return 'not-handled'
+    },
+    // 块元素的渲染
     blockRendererFn: (block: ContentBlock ) => {
       if (block.getType() === 'atomic') {
         const contentState = getCurrentStart().getCurrentContent()
@@ -25,7 +45,6 @@ export default (props) => {
         }
         return null
       }
-  
       return null
     },
     // 每次变化都会调用，根据不同的key添加不同的className

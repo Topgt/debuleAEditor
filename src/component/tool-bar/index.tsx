@@ -146,6 +146,7 @@ const ToolBar: React.FC<IToolBar> = (props) => {
               >
                 <Input onBlur={(e) => {
                   const inputText = e.target.value
+                  e.target.value = ''
                   event.fire(`${action}`, inputText)
                 }} />
               </Popover>

@@ -151,6 +151,13 @@ const createFnHooks = (methodName: string, plugins: any[]) => (...newArgs) => {
     });
 
     return styles || '';
+  } else if (methodName === 'handleKeyCommand') {
+    const bool =  plugins.some(
+      plugin => 
+        typeof plugin === 'function' &&
+        plugin(...newArgs) === 'handled'
+    ) 
+    return bool ? 'handled' : 'not-handled'
   }
 
   let result

@@ -16,7 +16,7 @@ import {ImyEditor, IeditoRef} from './index.d'
 import {insertText, removeInlineStyle, applyInlineStyle, addEntity, createFnHooks} from './utils/index'
 import style from './style.less'
 
-const MyEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props, editorRef: React.MutableRefObject<Editor>) => {
+const DoubleAEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props, editorRef: React.MutableRefObject<Editor>) => {
   if(typeof editorRef === 'function') {
     (editorRef as any)(editor => editorRef = editor)
   }
@@ -31,6 +31,7 @@ const MyEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props, edit
   const getCurrentStart = () => stateRef.current
 
   const [pluginHooks, setPluginHooks] = React.useState(({} as any))
+  // 初始化插件
   React.useEffect(() => {
     const hooks: any = {}
     const fnHookKeys: any = {}
@@ -38,7 +39,7 @@ const MyEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props, edit
     plugins.forEach(plugin => {
       const result = typeof plugin === 'function' && plugin(params)
       _.keys(result).forEach(attrName => {
-        const isFnHookKey = /.*Fn$/.test(attrName)
+        const isFnHookKey = /.*Fn$|^handle.*/.test(attrName)
         if (isFnHookKey) {
           if (!fnHookKeys[attrName]) {
             fnHookKeys[attrName] = []
@@ -166,4 +167,4 @@ const MyEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props, edit
   )
 }
 
-export default React.forwardRef(MyEditor)
+export default React.forwardRef(DoubleAEditor)
