@@ -4,11 +4,9 @@
   "version": "0.0.9",
   "main": "lib/editor.esm.js",
   "scripts": {
-    "build": "npm run build-esm && npm run build-cjs",
-    "build-esm": "rollup -c rollup-config/esm.config.js",
-    "build-cjs": "rollup -c rollup-config/cjs.config.js",
+    "build": "rollup -c",
     "dev": "npm run watch",
-    "watch": "rollup -w -c rollup-config/esm.config.js",
+    "watch": "rollup -w -c",
     "example": "cd example && umi dev",
     "lint:es": "eslint --ext .js src mock tests",
     "lint:ts": "tslint \"src/**/*.ts\" \"src/**/*.tsx\"",

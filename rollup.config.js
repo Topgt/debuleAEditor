@@ -5,7 +5,7 @@ import typescript from 'rollup-plugin-typescript2'
 import common from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 
-export default {
+export default [{
   input: './src/index.tsx',
   output: {
     file: './lib/editor.cjs.js',
@@ -29,4 +29,21 @@ export default {
   watch: {
     exclude: 'node_modules/**'
   }
-}
+}, {
+  input: './src/index.tsx',
+  output: {
+    file: './lib/editor.esm.js',
+    format: 'esm'
+  },
+  plugins: [
+    babel(), 
+    typescript(), 
+    postcss({
+      modules: true,
+    })
+  ],
+  external: ['react', 'antd', 'draft-js', 'immutable'],
+  watch: {
+    exclude: 'node_modules/**'
+  }
+}]
