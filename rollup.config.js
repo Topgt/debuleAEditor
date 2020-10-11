@@ -4,11 +4,17 @@ import postcss from 'rollup-plugin-postcss'
 import typescript from 'rollup-plugin-typescript2'
 import common from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
+import { terser } from "rollup-plugin-terser"; // 压缩文件
 
-export default [{
-  input: './src/index.tsx',
+const env = process.env.NODE_ENV
+
+const inputPath = './src/index.tsx'
+const outPath = env === 'production' ? './lib' : './example/lib'
+
+const config = [{
+  input: inputPath,
   output: {
-    file: './lib/editor.cjs.js',
+    file: `${outPath}/editor.cjs.js`,
     format: 'cjs'
   },
   plugins: [
@@ -30,9 +36,9 @@ export default [{
     exclude: 'node_modules/**'
   }
 }, {
-  input: './src/index.tsx',
+  input: inputPath,
   output: {
-    file: './lib/editor.esm.js',
+    file: `${outPath}/editor.esm.js`,
     format: 'esm'
   },
   plugins: [
@@ -47,3 +53,13 @@ export default [{
     exclude: 'node_modules/**'
   }
 }]
+
+if (env === 'production') {
+  config.forEach(item => {
+    item.plugins.push(
+      terser()
+    )
+  })
+}
+
+export default  config

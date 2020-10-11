@@ -4,7 +4,7 @@
   "version": "0.0.9",
   "main": "lib/editor.esm.js",
   "scripts": {
-    "build": "rollup -c",
+    "build": "export NODE_ENV=production && rollup -c",
     "dev": "npm run watch",
     "watch": "rollup -w -c",
     "example": "cd example && umi dev",
@@ -40,6 +40,7 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-postcss": "^3.1.4",
+    "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.27.2",
     "tslint": "^5.12.0",
     "typescript": "^3.9.7",
