@@ -130,16 +130,18 @@ const addEntity = (editorState: EditorState, atomic: string, type: string) => {
     newEditorState.getCurrentContent().getSelectionAfter()
   )
 }
-
+const renderCompont = {} // 保存 blockRendererFn 的 component，因为如果每次都是新的component会导致第二次getEntityAt获取不到数据
 const createFnHooks = (methodName: string, plugins: any[]) => (...newArgs) => {
   if (methodName === 'blockRendererFn') {
+    const key = _.get(newArgs, '[0]').getEntityAt(0)
     let block: {[key: string]: any} = { props: {} }
-    plugins.forEach(plugin => {
+    const initBlock = (plugin, decorators=[]) => {
       const result = typeof plugin === 'function'
-                      ? plugin(...newArgs)
-                      : undefined
+            ? plugin(...newArgs)
+            : undefined
       if (result !== undefined && result !== null) {
-        const { props: pluginProps, ...pluginRest } = result
+        const { props: pluginProps, createDecorator, ...pluginRest } = result
+        createDecorator && decorators.push(createDecorator)
         const { props, ...rest } = block
         block = {
           ...rest,
@@ -147,27 +149,60 @@ const createFnHooks = (methodName: string, plugins: any[]) => (...newArgs) => {
           props: { ...props, ...pluginProps },
         };
       }
+    }
+    plugins.forEach(plugin => {
+      if (_.isArray(plugin)) {
+        const decorators = []
+        plugin.forEach(p => initBlock(p, decorators))
+        if (block.component && decorators.length) {
+          debugger
+          if (!renderCompont[key]) {
+            renderCompont[key] = decorators.reduce(
+              (component: any, next: any) => next(component), 
+              block.component
+            )
+          }
+          block.component = renderCompont[key]
+        }
+      } else {
+        initBlock(plugin)
+      }
     });
 
     return block.component ? block : false;
   } else if (methodName === 'blockStyleFn') {
     let styles;
-    plugins.forEach(plugin => {
+    const initStyles = (plugin) => {
       const result = typeof plugin[methodName] === 'function'
-                      ? plugin[methodName](...newArgs)
-                      : undefined
+            ? plugin[methodName](...newArgs)
+            : undefined
       if (result !== undefined && result !== null) {
-        styles = (styles ? `${styles} ` : '') + result;
+        return result;
       }
+    }
+    plugins.forEach(plugin => {
+      if (_.isArray(plugin)) {
+        plugin.forEach(p => {
+          styles = (styles ? `${styles} ` : '') + initStyles(p)
+        })
+      } else {
+        styles = (styles ? `${styles} ` : '') + initStyles(plugin)
+      }
+      
     });
 
     return styles || '';
   } else if (methodName === 'handleKeyCommand') {
     const bool =  plugins.some(
-      plugin => 
-        typeof plugin === 'function' &&
-        plugin(...newArgs) === 'handled'
+      plugin => {
+        if (_.isArray(plugin)) {
+          return plugin.some(p => p(...newArgs) === 'handled')
+        } else {
+          return plugin(...newArgs) === 'handled'
+        }
+      }
     ) 
+
     return bool ? 'handled' : 'not-handled'
   }
 

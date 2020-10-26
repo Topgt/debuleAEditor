@@ -1,5 +1,6 @@
 import Events from './events'
 import Stack from './stack'
+import composeDecorators from './compose-decorators'
 import {
   moveSelectionToEnd,
   removeBlockStyle,
@@ -7,7 +8,7 @@ import {
   applyInlineStyle,
   addEntity,
   insertText,
-  createFnHooks
+  createFnHooks,
 } from './draft'
 
 export {
@@ -19,5 +20,6 @@ export {
   applyInlineStyle,
   addEntity,
   insertText,
-  createFnHooks
+  createFnHooks,
+  composeDecorators
 }

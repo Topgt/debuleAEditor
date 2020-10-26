@@ -1,9 +1,10 @@
 import React from 'react'
 import {EditorState, RichUtils} from 'draft-js'
-import {Events, Stack} from './utils/index'
+import {Events, Stack, composeDecorators} from './utils/index'
 import MyEditor from './editor'
 import ToolBar from './component/tool-bar'
 import imagePlugin from './plugin/image-plugin'
+import focusPlugin from './plugin/focus-plugin'
 import {ImyEditor, IToolBar, IeditoRef} from './index.d'
 import style from './style.less'
 import './global.less'
@@ -21,8 +22,9 @@ const Index: React.FC<{}> = () => {
     event: eventRef.current,
   }
 
+  const blockPlugin =  composeDecorators(focusPlugin, imagePlugin)
   const editorProps: ImyEditor = {
-    plugins: [ imagePlugin ],
+    plugins: [ blockPlugin ],
     event: eventRef.current,
     stack: stackRef.current,
     editorState,
