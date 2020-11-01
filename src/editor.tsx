@@ -23,12 +23,12 @@ const DoubleAEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props,
   const {editorState, setEditorState, onChange, event, stack, plugins} = props
   // 点击格式刷分两段，第一段设置为true
   const [formatBrush, setFormatBrush] = React.useState(false)
+  
   // 解决闭包内拿不到最新editorState
-  const stateRef = React.useRef(editorState)
-  React.useEffect(() => {
-    stateRef.current = editorState
-  }, [editorState])
-  const getCurrentStart = () => stateRef.current
+  const stateRef = React.useRef({editorState, formatBrush})
+  stateRef.current = {editorState, formatBrush}
+  const getCurrentStart = () => stateRef.current.editorState
+  const getFormatBrush = () => stateRef.current.formatBrush
 
   const [pluginHooks, setPluginHooks] = React.useState(({} as any))
   // 初始化插件
@@ -39,7 +39,7 @@ const DoubleAEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props,
     plugins.forEach(plugin => {
       const result = typeof plugin === 'function' && plugin(params)
       _.keys(result).forEach(attrName => {
-        const isFnHookKey = /.*Fn$|^handle.*/.test(attrName)
+        const isFnHookKey = /.*Fn$|^handle.*|onChange/.test(attrName)
         if (isFnHookKey) {
           if (!fnHookKeys[attrName]) {
             fnHookKeys[attrName] = []
@@ -48,6 +48,12 @@ const DoubleAEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props,
         }
       })
     })
+
+    if (_.has(fnHookKeys, 'onChange')) {
+      fnHookKeys['onChange'].push(change)
+    } else {
+      fnHookKeys['onChange'] = [change]
+    }
     _.keys(fnHookKeys).forEach(attrName => {
       hooks[attrName] = createFnHooks(attrName, fnHookKeys[attrName])
     })
@@ -124,14 +130,16 @@ const DoubleAEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props,
   }, [])
 
   const change = (state: EditorState) => {
-    const oldText = editorState.getCurrentContent().getPlainText()        
+    const oldState = getCurrentStart()
     const newText = state.getCurrentContent().getPlainText()
+    const oldText = oldState.getCurrentContent().getPlainText()        
     if(newText !== oldText){       
       typeof onChange === 'function' && onChange(state)
       stack.push(state)
     }
-    if (formatBrush) {
-      const inlineStyles:string[] = editorState.getCurrentInlineStyle().toJS()
+
+    if (getFormatBrush()) {
+      const inlineStyles:string[] = oldState.getCurrentInlineStyle().toJS()
       const newState = applyInlineStyle(state, inlineStyles)
       setFormatBrush(false)
       setEditorState(newState)
@@ -160,7 +168,6 @@ const DoubleAEditor: React.ForwardRefRenderFunction<Editor, ImyEditor> = (props,
         blockRenderMap={DefaultDraftBlockRenderMap.merge(blockRenderMap)}
         {...pluginHooks}
         editorState={editorState}
-        onChange={change}
         ref={editorRef}
       />
     </div>

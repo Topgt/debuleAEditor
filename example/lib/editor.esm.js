@@ -1,7 +1,7 @@
 import React from 'react';
 import { EditorState, CharacterMetadata, Modifier, SelectionState, AtomicBlockUtils, RichUtils, convertToRaw, Editor, DefaultDraftBlockRenderMap } from 'draft-js';
-import Immutable, { OrderedSet, Map } from 'immutable';
 import _ from 'lodash';
+import Immutable, { OrderedSet, Map, List } from 'immutable';
 import classnames from 'classnames';
 
 class MyEvent {
@@ -82,6 +82,20 @@ class Stack {
     }
 }
 
+var composeDecorators = (...plugins) => (params) => {
+    const hooks = {};
+    plugins.forEach(plugin => {
+        const result = typeof plugin === 'function' && plugin(params);
+        _.keys(result).forEach(attrName => {
+            if (!hooks[attrName]) {
+                hooks[attrName] = [];
+            }
+            hooks[attrName].push(result[attrName]);
+        });
+    });
+    return hooks;
+};
+
 const removeBlockStyle = (contentBlock, rule) => {
     const characterList = contentBlock.getCharacterList();
     const nweCharacterList = characterList.map((character) => {
@@ -161,15 +175,18 @@ const addEntity = (editorState, atomic, type) => {
     }
     return EditorState.forceSelection(newEditorState, newEditorState.getCurrentContent().getSelectionAfter());
 };
+const renderCompont = {};
 const createFnHooks = (methodName, plugins) => (...newArgs) => {
     if (methodName === 'blockRendererFn') {
+        const key = _.get(newArgs, '[0]').getEntityAt(0);
         let block = { props: {} };
-        plugins.forEach(plugin => {
+        const initBlock = (plugin, decorators = []) => {
             const result = typeof plugin === 'function'
                 ? plugin(...newArgs)
                 : undefined;
             if (result !== undefined && result !== null) {
-                const { props: pluginProps, ...pluginRest } = result;
+                const { props: pluginProps, createDecorator, ...pluginRest } = result;
+                createDecorator && decorators.push(createDecorator);
                 const { props, ...rest } = block;
                 block = {
                     ...rest,
@@ -177,24 +194,76 @@ const createFnHooks = (methodName, plugins) => (...newArgs) => {
                     props: { ...props, ...pluginProps },
                 };
             }
+        };
+        plugins.forEach(plugin => {
+            if (_.isArray(plugin)) {
+                const decorators = [];
+                plugin.forEach(p => initBlock(p, decorators));
+                if (block.component && decorators.length) {
+                    if (!renderCompont[key]) {
+                        renderCompont[key] = decorators.reduce((component, next) => next(component), block.component);
+                    }
+                    block.component = renderCompont[key];
+                }
+            }
+            else {
+                initBlock(plugin);
+            }
         });
         return block.component ? block : false;
     }
+    else if (methodName === 'onChange') {
+        let state = _.get(newArgs, '[0]');
+        const initState = (plugin, initState) => {
+            const result = typeof plugin === 'function'
+                ? plugin(initState)
+                : undefined;
+            if (result !== undefined && result !== null) {
+                return result;
+            }
+            return initState;
+        };
+        plugins.reduce((nextState, plugin) => {
+            if (_.isArray(plugin)) {
+                return plugin.reduce((nState, p) => initState(p, nState), nextState);
+            }
+            else {
+                return initState(plugin, nextState);
+            }
+        }, state);
+        return;
+    }
     else if (methodName === 'blockStyleFn') {
         let styles;
-        plugins.forEach(plugin => {
+        const initStyles = (plugin) => {
             const result = typeof plugin[methodName] === 'function'
                 ? plugin[methodName](...newArgs)
                 : undefined;
             if (result !== undefined && result !== null) {
-                styles = (styles ? `${styles} ` : '') + result;
+                return result;
+            }
+        };
+        plugins.forEach(plugin => {
+            if (_.isArray(plugin)) {
+                plugin.forEach(p => {
+                    styles = (styles ? `${styles} ` : '') + initStyles(p);
+                });
+            }
+            else {
+                styles = (styles ? `${styles} ` : '') + initStyles(plugin);
             }
         });
         return styles || '';
     }
     else if (methodName === 'handleKeyCommand') {
-        const bool = plugins.some(plugin => typeof plugin === 'function' &&
-            plugin(...newArgs) === 'handled');
+        const bool = plugins.some(plugin => {
+            if (_.isArray(plugin)) {
+                return plugin.some(p => p(...newArgs) === 'handled');
+            }
+            else {
+                return plugin(...newArgs) === 'handled';
+            }
+        });
         return bool ? 'handled' : 'not-handled';
     }
     let result;
@@ -487,11 +556,10 @@ const DoubleAEditor = (props, editorRef) => {
     }
     const { editorState, setEditorState, onChange, event, stack, plugins } = props;
     const [formatBrush, setFormatBrush] = React.useState(false);
-    const stateRef = React.useRef(editorState);
-    React.useEffect(() => {
-        stateRef.current = editorState;
-    }, [editorState]);
-    const getCurrentStart = () => stateRef.current;
+    const stateRef = React.useRef({ editorState, formatBrush });
+    stateRef.current = { editorState, formatBrush };
+    const getCurrentStart = () => stateRef.current.editorState;
+    const getFormatBrush = () => stateRef.current.formatBrush;
     const [pluginHooks, setPluginHooks] = React.useState({});
     React.useEffect(() => {
         const hooks = {};
@@ -500,7 +568,7 @@ const DoubleAEditor = (props, editorRef) => {
         plugins.forEach(plugin => {
             const result = typeof plugin === 'function' && plugin(params);
             _.keys(result).forEach(attrName => {
-                const isFnHookKey = /.*Fn$|^handle.*/.test(attrName);
+                const isFnHookKey = /.*Fn$|^handle.*|onChange/.test(attrName);
                 if (isFnHookKey) {
                     if (!fnHookKeys[attrName]) {
                         fnHookKeys[attrName] = [];
@@ -509,6 +577,12 @@ const DoubleAEditor = (props, editorRef) => {
                 }
             });
         });
+        if (_.has(fnHookKeys, 'onChange')) {
+            fnHookKeys['onChange'].push(change);
+        }
+        else {
+            fnHookKeys['onChange'] = [change];
+        }
         _.keys(fnHookKeys).forEach(attrName => {
             hooks[attrName] = createFnHooks(attrName, fnHookKeys[attrName]);
         });
@@ -580,14 +654,15 @@ const DoubleAEditor = (props, editorRef) => {
         });
     }, []);
     const change = (state) => {
-        const oldText = editorState.getCurrentContent().getPlainText();
+        const oldState = getCurrentStart();
         const newText = state.getCurrentContent().getPlainText();
+        const oldText = oldState.getCurrentContent().getPlainText();
         if (newText !== oldText) {
             typeof onChange === 'function' && onChange(state);
             stack.push(state);
         }
-        if (formatBrush) {
-            const inlineStyles = editorState.getCurrentInlineStyle().toJS();
+        if (getFormatBrush()) {
+            const inlineStyles = oldState.getCurrentInlineStyle().toJS();
             const newState = applyInlineStyle(state, inlineStyles);
             setFormatBrush(false);
             setEditorState(newState);
@@ -603,7 +678,7 @@ const DoubleAEditor = (props, editorRef) => {
                 });
             }
         } },
-        React.createElement(Editor, Object.assign({ customStyleMap: customStyleMap, blockRenderMap: DefaultDraftBlockRenderMap.merge(blockRenderMap) }, pluginHooks, { editorState: editorState, onChange: change, ref: editorRef }))));
+        React.createElement(Editor, Object.assign({ customStyleMap: customStyleMap, blockRenderMap: DefaultDraftBlockRenderMap.merge(blockRenderMap) }, pluginHooks, { editorState: editorState, ref: editorRef }))));
 };
 var MyEditor = React.forwardRef(DoubleAEditor);
 
@@ -930,7 +1005,148 @@ var imagePlugin = (props) => {
     };
 };
 
-var css_248z$7 = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
+function _extends() {
+  _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  return _extends.apply(this, arguments);
+}
+
+var createDecorator = (function (WrappedComponent) {
+  return function (props) {
+    var blockProps = props.blockProps;
+    var isFocused = blockProps.isFocused,
+        blockKeyStore = blockProps.blockKeyStore;
+    React.useEffect(function () {
+      // blockKeyStore.add(props.block.getKey())
+      return function () {
+        blockKeyStore.remove(props.block.getKey());
+      };
+    }, []);
+
+    var click = function click(evt) {
+      evt.preventDefault();
+
+      if (!isFocused) {
+        blockKeyStore.add(props.block.getKey());
+        blockProps.setFocusToBlock(props.block.getKey(), true);
+      }
+    };
+
+    return /*#__PURE__*/React.createElement("div", {
+      onClick: click,
+      style: {
+        lineHeight: 0
+      }
+    }, /*#__PURE__*/React.createElement(WrappedComponent, _extends({}, props, {
+      onClick: click
+    })));
+  };
+});
+
+const createBlockKeyStore = () => {
+    let keys = List();
+    const add = key => {
+        keys = keys.push(key);
+        return keys;
+    };
+    const remove = key => {
+        keys = keys.filter(item => item !== key);
+        return keys;
+    };
+    return {
+        add,
+        remove,
+        includes: key => keys.includes(key),
+        getAll: () => keys,
+    };
+};
+
+var setSelectionToBlock = (getEditorState, setEditorState, newActiveBlock) => {
+    const editorState = getEditorState();
+    const offsetKey = `${newActiveBlock.getKey()}-0-0`;
+    const node = document.querySelectorAll(`[data-offset-key="${offsetKey}"]`)[0];
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    const newState = EditorState.forceSelection(editorState, new SelectionState({
+        anchorKey: newActiveBlock.getKey(),
+        anchorOffset: 0,
+        focusKey: newActiveBlock.getKey(),
+        focusOffset: 0,
+        isBackward: false,
+    }));
+    setEditorState(newState);
+};
+
+var getBlockMapKeys = (contentState, startKey, endKey) => {
+    const blockMapKeys = contentState.getBlockMap().keySeq();
+    return blockMapKeys
+        .skipUntil(key => key === startKey)
+        .takeUntil(key => key === endKey)
+        .concat([endKey]);
+};
+
+var blockInSelectionEd = (getCurrentStart, blockKey) => {
+    const editorState = getCurrentStart();
+    const selectionState = editorState.getSelection();
+    const contentState = editorState.getCurrentContent();
+    const selectedBlocksKeys = getBlockMapKeys(contentState, selectionState.getStartKey(), selectionState.getEndKey());
+    return selectedBlocksKeys.includes(blockKey);
+};
+
+var focusPlugin = (props) => {
+    const { getCurrentStart, setEditorState, event, editorRef } = props;
+    const blockKeyStore = createBlockKeyStore();
+    let lastContentState = undefined;
+    return {
+        blockRendererFn: (block) => {
+            if (block.getType() === 'atomic') {
+                const isFocused = blockInSelectionEd(getCurrentStart, block.getKey());
+                return {
+                    props: {
+                        isFocused,
+                        blockKeyStore,
+                        setFocusToBlock: () => setSelectionToBlock(getCurrentStart, setEditorState, block),
+                        isCollapsedSelection: getCurrentStart().getSelection().isCollapsed(),
+                    },
+                    createDecorator
+                };
+            }
+            return null;
+        },
+        onChange: (editorState) => {
+            const contentState = editorState.getCurrentContent();
+            if (!contentState.equals(lastContentState)) {
+                lastContentState = contentState;
+                return editorState;
+            }
+            lastContentState = contentState;
+            const focusableBlockKeys = blockKeyStore.getAll();
+            if (focusableBlockKeys && focusableBlockKeys.size) {
+                focusableBlockKeys.forEach(key => blockKeyStore.remove(key));
+                return EditorState.forceSelection(editorState, editorState.getSelection());
+            }
+            return editorState;
+        },
+        blockStyleFn: (contentBlock) => ''
+    };
+};
+
+var css_248z$7 = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
 styleInject(css_248z$7);
 
 const Index = () => {
@@ -944,8 +1160,9 @@ const Index = () => {
         stack: stackRef.current,
         event: eventRef.current,
     };
+    const blockPlugin = composeDecorators(focusPlugin, imagePlugin);
     const editorProps = {
-        plugins: [imagePlugin],
+        plugins: [blockPlugin],
         event: eventRef.current,
         stack: stackRef.current,
         editorState,

@@ -155,7 +155,6 @@ const createFnHooks = (methodName: string, plugins: any[]) => (...newArgs) => {
         const decorators = []
         plugin.forEach(p => initBlock(p, decorators))
         if (block.component && decorators.length) {
-          debugger
           if (!renderCompont[key]) {
             renderCompont[key] = decorators.reduce(
               (component: any, next: any) => next(component), 
@@ -170,6 +169,29 @@ const createFnHooks = (methodName: string, plugins: any[]) => (...newArgs) => {
     });
 
     return block.component ? block : false;
+  } else if (methodName === 'onChange') {
+    let state = _.get(newArgs, '[0]')
+    const initState = (plugin, initState) => {
+      const result = typeof plugin === 'function'
+            ? plugin(initState)
+            : undefined
+      if (result !== undefined && result !== null) {
+        return result
+      }
+      return initState
+    }
+    
+    plugins.reduce((nextState, plugin) => {
+      if (_.isArray(plugin)) {
+        return plugin.reduce(
+          (nState, p) => initState(p, nState),
+          nextState
+        )        
+      } else {
+        return initState(plugin, nextState)
+      }
+    }, state)
+    return
   } else if (methodName === 'blockStyleFn') {
     let styles;
     const initStyles = (plugin) => {
