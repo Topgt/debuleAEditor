@@ -331,6 +331,252 @@ const Icon = (props) => {
     return React.createElement("span", { className: style.iconfont, dangerouslySetInnerHTML: { __html: `${fontIcon}` } });
 };
 
+const renderBut = (toolBarState, toolbarItem, key) => {
+    const { event, stack, inlineStyles } = toolBarState;
+    const { action, areas } = toolbarItem;
+    return areas.map((area, idx) => {
+        const { value, lable } = area;
+        let active = inlineStyles.includes(value.toString()) ? 'true' : 'false';
+        let disabled = false;
+        if ('撤销' === lable) {
+            disabled = stack.isBottom();
+            active = `${!disabled}`;
+        }
+        else if ('重做' === lable) {
+            disabled = stack.isTop();
+            active = `${!disabled}`;
+        }
+        return (React.createElement("button", { key: `${key}-${idx}`, disabled: disabled, className: classnames({ tooltip: !disabled }), active: active, tooltip: lable, onMouseDown: e => {
+                e.preventDefault();
+                event.fire(`${action}`, value);
+            } }, area.icon));
+    });
+};
+
+const Context = React.createContext({});
+
+var css_248z$1 = ".style_select__Os_gC {\n  position: relative;\n  display: inline-block;\n  outline: none;\n}\n.style_select__Os_gC .style_lake__8HnBa {\n  display: inline-block;\n  height: 100%;\n  padding-right: 20px;\n  white-space: nowrap;\n}\n.style_select__Os_gC .style_lake__8HnBa > i {\n  position: relative;\n}\n.style_select__Os_gC .style_lake__8HnBa > i:after {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 7px;\n  left: 10px;\n  border-width: 8px 5px 8px 5px;\n  border-style: solid;\n  border-color: #555 transparent transparent transparent;\n}\n.style_select__Os_gC .style_dropDown__ZSRCu {\n  position: absolute;\n  padding: 5px 0;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n.style_select__Os_gC .style_option__g9LRZ {\n  padding: 3px 8px;\n  white-space: nowrap;\n  cursor: pointer;\n}\n.style_select__Os_gC .style_option__g9LRZ:hover {\n  background-color: #f5f5f5;\n}\n";
+var styl = {"select":"style_select__Os_gC","lake":"style_lake__8HnBa","dropDown":"style_dropDown__ZSRCu","option":"style_option__g9LRZ"};
+styleInject(css_248z$1);
+
+const Option = props => {
+    const { value, children, lable, className, style } = props;
+    let optlable = children;
+    if (!children) {
+        optlable = React.createElement("div", null, lable);
+    }
+    return (React.createElement(Context.Consumer, null, ({ v, setV }) => (React.createElement("div", { className: `${styl.option} ${className}`, style: style }, typeof optlable === 'function'
+        ? React.createElement("div", null, optlable(v, setV))
+        : (React.createElement("div", { onMouseDown: (e) => {
+                e.preventDefault();
+                setV(value);
+            } }, optlable))))));
+};
+
+const Select = props => {
+    let { disabled, className, tooltip, children, initValue, value, lable, onChange, automatic = true } = props;
+    if (!React.Children.count(children)) {
+        return React.createElement("div", null);
+    }
+    let initSelect = {};
+    const currentValue = value || initValue;
+    if (currentValue) {
+        initSelect = children.find(({ props }) => props.value === currentValue) || {};
+    }
+    const [visible, setVisible] = React.useState(false);
+    const [selectOption, changeSelect] = React.useState((initSelect.props || {}));
+    const selectRef = React.useRef(null);
+    React.useEffect(() => {
+        const globalClick = (e) => {
+            let target = e.target;
+            while (target && target.nodeName !== 'BODY') {
+                if (target === selectRef.current) {
+                    e.preventDefault();
+                    break;
+                }
+                target = target.parentElement;
+            }
+            if (!target || target.nodeName === 'BODY') {
+                e.preventDefault();
+                setVisible(false);
+                return;
+            }
+        };
+        if (document.querySelector('body')) {
+            document.querySelector('body').addEventListener('click', globalClick, false);
+        }
+        return () => {
+            if (document.querySelector('body')) {
+                document.querySelector('body').removeEventListener('click', globalClick);
+            }
+        };
+    }, []);
+    React.useEffect(() => {
+        if (value) {
+            initSelect = children.find(({ props }) => props.value === value);
+            initSelect && changeSelect(initSelect.props);
+        }
+    }, [value]);
+    const contextValue = {
+        v: currentValue || selectOption.value,
+        setV: (v) => {
+            const selected = children.find(({ props }) => props.value === v) || {};
+            changeSelect(selected.props || { value: v });
+            typeof onChange === 'function' && onChange(v);
+            automatic && setVisible(false);
+        },
+    };
+    return (React.createElement("div", { ref: ref => selectRef.current = ref, className: styl.select, disabled: disabled },
+        React.createElement("div", { className: className, tooltip: tooltip, onMouseDown: (e) => {
+                e.preventDefault();
+                setVisible(disabled ? false : !visible);
+            } },
+            React.createElement("span", { className: styl.lake },
+                lable || selectOption.lable || selectOption.value || currentValue,
+                React.createElement("i", null))),
+        React.createElement(Context.Provider, { value: contextValue },
+            React.createElement("div", { className: styl.dropDown, style: {
+                    display: `${visible ? "inline-flex" : "none"}`,
+                } }, children))));
+};
+Select.Option = Option;
+
+const renderSelect = (toolBarState, toolbarItem, key) => {
+    const { event, inlineStyles, blockType, blockData } = toolBarState;
+    const { action, areas, initValue, lable, icon } = toolbarItem;
+    let disabled = false;
+    let currentValue = undefined;
+    if (lable === '文本和标题') {
+        currentValue = blockType;
+    }
+    else if (lable === '字号') {
+        disabled = ['header-one', 'header-two', 'header-three', 'header-four', 'header-five', 'header-six'].includes(blockType);
+        currentValue = _.findLast(inlineStyles, style => /^\d{1,2}px$/.test(style)) || initValue;
+    }
+    else if (lable === '对齐方式') {
+        try {
+            const textAlign = _.get(blockData, 'textAlign');
+            currentValue = textAlign ? JSON.stringify({ textAlign }) : initValue;
+        }
+        catch (e) { }
+    }
+    return (React.createElement(Select, { disabled: disabled, className: classnames({ tooltip: !disabled }), key: key, onChange: (style) => event.fire(`${action}`, style), initValue: initValue, value: currentValue, tooltip: lable }, areas.map(({ icon, lable = '', value }, i) => (React.createElement(Select.Option, { key: `${key}-${i}`, value: value, lable: icon
+            ? icon
+            : React.createElement("span", { style: { width: '45px', display: 'inline-block' }, dangerouslySetInnerHTML: { __html: lable.replace(/<[^>]+>/g, "") } }) }, (v, setV) => (React.createElement("span", { onMouseDown: (e) => {
+            e.preventDefault();
+            if (value !== v) {
+                setV(value);
+            }
+        } },
+        icon,
+        React.createElement("span", { style: { minWidth: '75px', display: 'inline-block', marginLeft: '8px', verticalAlign: 'middle' }, dangerouslySetInnerHTML: { __html: `${lable}` } }),
+        v === value
+            ? React.createElement(Icon, { fontIcon: "\uE61C" })
+            : '')))))));
+};
+
+var css_248z$2 = ".style_lable__2qU9T {\n  display: inline-block;\n}\n.style_lable__2qU9T > em {\n  display: block;\n  width: 16px;\n  height: 2px;\n}\n.style_option__YhK-o {\n  font-size: 0;\n}\n.style_option__YhK-o:hover {\n  cursor: auto;\n  background-color: transparent !important;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 {\n  position: relative;\n  display: inline-block;\n  width: 25px;\n  height: 25px;\n  margin: 0 4px;\n  padding: 1px;\n  border-radius: 3px;\n  border: 1px solid transparent;\n}\n.style_option__YhK-o .style_colorItem__3Fi51:hover {\n  border-color: #fa541c;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span {\n  display: inline-block;\n  margin: 2px;\n  width: 21px;\n  height: 21px;\n  cursor: pointer;\n  border-radius: 3px;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span + span {\n  position: absolute;\n  color: white;\n  z-index: 99;\n  top: 2px;\n  left: 3px;\n}\n";
+var style$1 = {"lable":"style_lable__2qU9T","option":"style_option__YhK-o","colorItem":"style_colorItem__3Fi51"};
+styleInject(css_248z$2);
+
+const ColorPanel = (props) => {
+    const { disabled, change, areas, lable, icon, value, initValue = '#000000' } = props;
+    const currentValue = value || initValue;
+    const [selectColor, setColor] = React.useState(currentValue);
+    React.useEffect(() => setColor(currentValue), [currentValue]);
+    const colorLable = (React.createElement("span", { className: style$1.lable },
+        icon,
+        React.createElement("em", { style: { backgroundColor: selectColor } })));
+    return (React.createElement(Select, { disabled: disabled, className: classnames({ tooltip: !disabled }), initValue: initValue, value: currentValue, onChange: change, tooltip: lable, lable: colorLable }, areas.map(({ value }, idx) => (React.createElement(Select.Option, { className: style$1.option, key: idx }, (v, setv) => {
+        return value.map((colorHex, i) => (React.createElement("span", { className: style$1.colorItem, key: `${idx}-${i}`, onMouseDown: (e) => {
+                e.preventDefault();
+                if (colorHex !== v) {
+                    setv(colorHex);
+                    setColor(colorHex);
+                }
+            } },
+            React.createElement("span", { style: {
+                    backgroundColor: colorHex
+                } }),
+            v === colorHex
+                ? React.createElement(Icon, { fontIcon: "\uE61C" })
+                : '')));
+    })))));
+};
+
+const renderColorPanel = (toolBarState, toolbarItem, key) => {
+    const { event, inlineStyles, blockType, blockData } = toolBarState;
+    const { type, action, areas, initValue, lable, icon } = toolbarItem;
+    let disabled = false;
+    let currentValue = undefined;
+    if (lable === '字体颜色') {
+        const colorValue = _.findLast(inlineStyles, style => /^color-#\w{6}$/.test(style)) || '';
+        const color = colorValue.match(/^color-(#\w{6})$/);
+        currentValue = color ? color[1] : initValue;
+    }
+    else if (lable === '背景色') {
+        const colorValue = _.findLast(inlineStyles, style => /^background-#\w{6}$/.test(style)) || '';
+        const color = colorValue.match(/^background-(#\w{6})$/);
+        currentValue = color ? color[1] : initValue;
+    }
+    return (React.createElement(ColorPanel, { key: key, disabled: disabled, initValue: initValue, value: currentValue, change: (s) => event.fire(`${action}`, `${type}-${s}`), areas: areas, lable: lable, icon: icon }));
+};
+
+var css_248z$3 = ".style_popover__2RxA8 {\n  position: relative;\n}\n.style_popover__2RxA8 .style_btn__1-e3m {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2RxA8 .style_dropDown__2LkP4 {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
+var style$2 = {"popover":"style_popover__2RxA8","btn":"style_btn__1-e3m","dropDown":"style_dropDown__2LkP4"};
+styleInject(css_248z$3);
+
+const Popover = (props) => {
+    const { className, lable, icon, children, disabled = false, tooltip } = props;
+    const popoverRef = React.useRef(null);
+    const [visible, setVisible] = React.useState(false);
+    React.useEffect(() => {
+        const globalClick = (e) => {
+            let target = e.target;
+            while (target && target.nodeName !== 'BODY') {
+                if (target === popoverRef.current) {
+                    e.preventDefault();
+                    return;
+                }
+                target = target.parentElement;
+            }
+            if (!target || target.nodeName === 'BODY') {
+                e.preventDefault();
+                setVisible(false);
+                return;
+            }
+        };
+        if (document.querySelector('body')) {
+            document.querySelector('body').addEventListener('click', globalClick, false);
+        }
+        return () => {
+            if (document.querySelector('body')) {
+                document.querySelector('body').removeEventListener('click', globalClick);
+            }
+        };
+    }, []);
+    return (React.createElement("div", { ref: (ref) => popoverRef.current = ref, className: classnames(className, style$2.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
+            e.stopPropagation();
+            setVisible(disabled ? false : !visible);
+        } },
+        icon,
+        React.createElement("div", { className: style$2.dropDown, style: {
+                display: `${visible ? "inline-flex" : "none"}`,
+            }, onMouseDown: (e) => {
+                e.stopPropagation();
+            } }, children)));
+};
+
+var css_248z$4 = ".style_input__Ohlyv {\n  display: inline-block;\n  color: rgba(0, 0, 0, 0.85);\n  font-size: 14px;\n  padding: 1px 8px;\n  line-height: 1.33;\n  border: 1px solid #d9d9d9;\n  border-radius: 2px;\n  transition: all 0.3s;\n}\n.style_input__Ohlyv:focus {\n  border-color: #40a9ff;\n  border-right-width: 1px!important;\n  outline: 0;\n  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);\n}\n";
+var style$3 = {"input":"style_input__Ohlyv"};
+styleInject(css_248z$4);
+
+const Input = (props, ref) => {
+    const { className, placeholder, onChange = () => { }, onBlur = () => { }, onFocus } = props;
+    return React.createElement("input", { ref: ref, className: classnames(className, style$3.input), onChange: onChange, onBlur: onBlur, onFocus: onFocus, placeholder: placeholder });
+};
+var Input$1 = React.forwardRef(Input);
+
 const blockRenderMap = Immutable.Map({
     'unstyled': {
         element: 'div',
@@ -427,26 +673,25 @@ const colors = [
         ]
     }
 ];
-const toolbarArea = [
+const toolbar = [
     {
         action: 'changeEditorState',
-        type: 'btn',
         areas: [
             { lable: '保存', icon: React.createElement(Icon, { fontIcon: "\uE6FE" }), value: 'seve' },
             { lable: '撤销', icon: React.createElement(Icon, { fontIcon: "\uE629" }), value: 'undo' },
             { lable: '重做', icon: React.createElement(Icon, { fontIcon: "\uE62A" }), value: 'redo' }
-        ]
+        ],
+        render: renderBut
     }, {
         action: 'format',
-        type: 'btn',
         areas: [
             { lable: '格式刷', icon: React.createElement(Icon, { fontIcon: "\uE617" }), value: 'applyStyle' },
             { lable: '清除格式', icon: React.createElement(Icon, { fontIcon: "\uE65B" }), value: 'clearStyle' },
-        ]
+        ],
+        render: renderBut
     },
     [{
             action: 'toggleBlockType',
-            type: 'select',
             initValue: 'unstyled',
             lable: '文本和标题',
             areas: [
@@ -457,10 +702,10 @@ const toolbarArea = [
                 { lable: '<h4 style="margin: 0; display: inline-block; min-width: 120px;">标题 4</h4>', value: 'header-four' },
                 { lable: '<h5 style="margin: 0; display: inline-block; min-width: 120px;">标题 5</h4>', value: 'header-five' },
                 { lable: '<h6 style="margin: 0; display: inline-block; min-width: 120px;">标题 6</h4>', value: 'header-six' },
-            ]
+            ],
+            render: renderSelect
         }, {
             action: 'toggleInlineStyle',
-            type: 'select',
             initValue: '12px',
             lable: '字号',
             areas: [
@@ -476,43 +721,46 @@ const toolbarArea = [
                 { lable: '32px', value: '32px' },
                 { lable: '40px', value: '40px' },
                 { lable: '48px', value: '48px' },
-            ]
+            ],
+            render: renderSelect
         }],
     {
         action: 'toggleInlineStyle',
-        type: 'btn',
         areas: [
             { lable: '加粗', icon: React.createElement(Icon, { fontIcon: "\uE660" }), value: 'BOLD' },
             { lable: '斜体', icon: React.createElement(Icon, { fontIcon: "\uE700" }), value: 'ITALIC' },
             { lable: '删除线', icon: React.createElement(Icon, { fontIcon: "\uE664" }), value: 'STRIKETHROUGH' },
             { lable: '下划线', icon: React.createElement(Icon, { fontIcon: "\uE701" }), value: 'UNDERLINE' },
             { lable: '更多文本样式', icon: React.createElement(Icon, { fontIcon: "\uE632" }), value: 'dd' },
-        ]
+        ],
+        render: renderBut
     }, [{
             action: 'toggleInlineStyle',
             type: 'color',
             initValue: '#000000',
             lable: '字体颜色',
             icon: React.createElement(Icon, { fontIcon: "\uE601" }),
-            areas: colors
+            areas: colors,
+            render: renderColorPanel
         }, {
             action: 'toggleInlineStyle',
             type: 'background',
             initValue: '#ffffff',
             lable: '背景色',
             icon: React.createElement(Icon, { fontIcon: "\uE6F8" }),
-            areas: colors
+            areas: colors,
+            render: renderColorPanel
         }],
     {
         action: 'addBlockType',
-        type: 'select',
         initValue: JSON.stringify({ textAlign: 'left' }),
         lable: '对齐方式',
         areas: [
             { lable: '左对齐', icon: React.createElement(Icon, { fontIcon: "\uE6CF" }), value: JSON.stringify({ textAlign: 'left' }) },
             { lable: '居中对齐', icon: React.createElement(Icon, { fontIcon: "\uE73E" }), value: JSON.stringify({ textAlign: 'center' }) },
             { lable: '右对齐', icon: React.createElement(Icon, { fontIcon: "\uE6CD" }), value: JSON.stringify({ textAlign: 'right' }) },
-        ]
+        ],
+        render: renderSelect
     },
     {
         action: 'addEntity',
@@ -520,9 +768,19 @@ const toolbarArea = [
         initValue: JSON.stringify({ textAlign: 'left' }),
         areas: [
             { lable: '插入图片', icon: React.createElement(Icon, { fontIcon: "\uE64A" }), value: 'image' },
-            { lable: '插入表格', icon: React.createElement(Icon, { fontIcon: "\uE6CC" }), value: JSON.stringify({ textAlign: 'center' }) },
-            { lable: '插入公示', icon: React.createElement(Icon, { fontIcon: "\uE600" }), value: JSON.stringify({ textAlign: 'right' }) },
-        ]
+            { lable: '插入表格', icon: React.createElement(Icon, { fontIcon: "\uE6CC" }), value: '' },
+            { lable: '插入公示', icon: React.createElement(Icon, { fontIcon: "\uE600" }), value: '' },
+        ],
+        render: (toolBarState, toolbarItem, key) => {
+            const { event, stack, inlineStyles } = toolBarState;
+            const { action, areas } = toolbarItem;
+            return areas.map(({ icon, lable, }, idx) => React.createElement(Popover, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
+                React.createElement(Input$1, { onBlur: (e) => {
+                        const inputText = e.target.value;
+                        e.target.value = '';
+                        event.fire(`${action}`, inputText);
+                    } })));
+        }
     }
 ];
 const customStyleMap = {
@@ -546,9 +804,9 @@ colors.forEach(({ value }) => {
     });
 });
 
-var css_248z$1 = ".style_page__2FnF3 {\n  display: flex;\n  height: 100%;\n  overflow: hidden;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  background-color: #f9f9f9;\n}\n.style_page__2FnF3 .style_main__3Jxot {\n  width: 100%;\n  overflow-y: auto;\n  padding-bottom: 64px;\n}\n.style_page__2FnF3 .style_main__3Jxot .style_editor__1Eryk {\n  border: 1px solid #e8e8e8;\n  border-radius: 3px;\n  box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);\n  width: 872px;\n  min-height: 1455px;\n  margin: 16px auto 0 auto;\n  padding: 20px 60px 90px 60px;\n  background-color: white;\n}\n";
-var style$1 = {"page":"style_page__2FnF3","main":"style_main__3Jxot","editor":"style_editor__1Eryk"};
-styleInject(css_248z$1);
+var css_248z$5 = ".style_page__2FnF3 {\n  display: flex;\n  height: 100%;\n  overflow: hidden;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  background-color: #f9f9f9;\n}\n.style_page__2FnF3 .style_main__3Jxot {\n  width: 100%;\n  overflow-y: auto;\n  padding-bottom: 64px;\n}\n.style_page__2FnF3 .style_main__3Jxot .style_editor__1Eryk {\n  border: 1px solid #e8e8e8;\n  border-radius: 3px;\n  box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);\n  width: 872px;\n  min-height: 1455px;\n  margin: 16px auto 0 auto;\n  padding: 20px 60px 90px 60px;\n  background-color: white;\n}\n";
+var style$4 = {"page":"style_page__2FnF3","main":"style_main__3Jxot","editor":"style_editor__1Eryk"};
+styleInject(css_248z$5);
 
 const DoubleAEditor = (props, editorRef) => {
     if (typeof editorRef === 'function') {
@@ -670,7 +928,7 @@ const DoubleAEditor = (props, editorRef) => {
         }
         setEditorState(state);
     };
-    return (React.createElement("div", { className: classnames({ formatBrush: formatBrush }, style$1.editor), onClick: (e) => {
+    return (React.createElement("div", { className: classnames({ formatBrush: formatBrush }, style$4.editor), onClick: (e) => {
             const contentEditable = document.activeElement.contentEditable;
             if (contentEditable !== 'true') {
                 setTimeout(() => {
@@ -682,186 +940,16 @@ const DoubleAEditor = (props, editorRef) => {
 };
 var MyEditor = React.forwardRef(DoubleAEditor);
 
-const Context = React.createContext({});
-
-var css_248z$2 = ".style_select__Os_gC {\n  position: relative;\n  display: inline-block;\n  outline: none;\n}\n.style_select__Os_gC .style_lake__8HnBa {\n  display: inline-block;\n  height: 100%;\n  padding-right: 20px;\n  white-space: nowrap;\n}\n.style_select__Os_gC .style_lake__8HnBa > i {\n  position: relative;\n}\n.style_select__Os_gC .style_lake__8HnBa > i:after {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 7px;\n  left: 10px;\n  border-width: 8px 5px 8px 5px;\n  border-style: solid;\n  border-color: #555 transparent transparent transparent;\n}\n.style_select__Os_gC .style_dropDown__ZSRCu {\n  position: absolute;\n  padding: 5px 0;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n.style_select__Os_gC .style_option__g9LRZ {\n  padding: 3px 8px;\n  white-space: nowrap;\n  cursor: pointer;\n}\n.style_select__Os_gC .style_option__g9LRZ:hover {\n  background-color: #f5f5f5;\n}\n";
-var styl = {"select":"style_select__Os_gC","lake":"style_lake__8HnBa","dropDown":"style_dropDown__ZSRCu","option":"style_option__g9LRZ"};
-styleInject(css_248z$2);
-
-const Option = props => {
-    const { value, children, lable, className, style } = props;
-    let optlable = children;
-    if (!children) {
-        optlable = React.createElement("div", null, lable);
-    }
-    return (React.createElement(Context.Consumer, null, ({ v, setV }) => (React.createElement("div", { className: `${styl.option} ${className}`, style: style }, typeof optlable === 'function'
-        ? React.createElement("div", null, optlable(v, setV))
-        : (React.createElement("div", { onMouseDown: (e) => {
-                e.preventDefault();
-                setV(value);
-            } }, optlable))))));
-};
-
-const Select = props => {
-    let { disabled, className, tooltip, children, initValue, value, lable, onChange, automatic = true } = props;
-    if (!React.Children.count(children)) {
-        return React.createElement("div", null);
-    }
-    let initSelect = {};
-    const currentValue = value || initValue;
-    if (currentValue) {
-        initSelect = children.find(({ props }) => props.value === currentValue) || {};
-    }
-    const [visible, setVisible] = React.useState(false);
-    const [selectOption, changeSelect] = React.useState((initSelect.props || {}));
-    const selectRef = React.useRef(null);
-    React.useEffect(() => {
-        const globalClick = (e) => {
-            let target = e.target;
-            while (target && target.nodeName !== 'BODY') {
-                if (target === selectRef.current) {
-                    e.preventDefault();
-                    break;
-                }
-                target = target.parentElement;
-            }
-            if (!target || target.nodeName === 'BODY') {
-                e.preventDefault();
-                setVisible(false);
-                return;
-            }
-        };
-        if (document.querySelector('body')) {
-            document.querySelector('body').addEventListener('click', globalClick, false);
-        }
-        return () => {
-            if (document.querySelector('body')) {
-                document.querySelector('body').removeEventListener('click', globalClick);
-            }
-        };
-    }, []);
-    React.useEffect(() => {
-        if (value) {
-            initSelect = children.find(({ props }) => props.value === value);
-            initSelect && changeSelect(initSelect.props);
-        }
-    }, [value]);
-    const contextValue = {
-        v: currentValue || selectOption.value,
-        setV: (v) => {
-            const selected = children.find(({ props }) => props.value === v) || {};
-            changeSelect(selected.props || { value: v });
-            typeof onChange === 'function' && onChange(v);
-            automatic && setVisible(false);
-        },
-    };
-    return (React.createElement("div", { ref: ref => selectRef.current = ref, className: styl.select, disabled: disabled },
-        React.createElement("div", { className: className, tooltip: tooltip, onMouseDown: (e) => {
-                e.preventDefault();
-                setVisible(disabled ? false : !visible);
-            } },
-            React.createElement("span", { className: styl.lake },
-                lable || selectOption.lable || selectOption.value || currentValue,
-                React.createElement("i", null))),
-        React.createElement(Context.Provider, { value: contextValue },
-            React.createElement("div", { className: styl.dropDown, style: {
-                    display: `${visible ? "inline-flex" : "none"}`,
-                } }, children))));
-};
-Select.Option = Option;
-
-var css_248z$3 = ".style_popover__2RxA8 {\n  position: relative;\n}\n.style_popover__2RxA8 .style_btn__1-e3m {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2RxA8 .style_dropDown__2LkP4 {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
-var style$2 = {"popover":"style_popover__2RxA8","btn":"style_btn__1-e3m","dropDown":"style_dropDown__2LkP4"};
-styleInject(css_248z$3);
-
-const Popover = (props) => {
-    const { className, lable, icon, children, disabled = false, tooltip } = props;
-    const popoverRef = React.useRef(null);
-    const [visible, setVisible] = React.useState(false);
-    React.useEffect(() => {
-        const globalClick = (e) => {
-            let target = e.target;
-            while (target && target.nodeName !== 'BODY') {
-                if (target === popoverRef.current) {
-                    e.preventDefault();
-                    return;
-                }
-                target = target.parentElement;
-            }
-            if (!target || target.nodeName === 'BODY') {
-                e.preventDefault();
-                setVisible(false);
-                return;
-            }
-        };
-        if (document.querySelector('body')) {
-            document.querySelector('body').addEventListener('click', globalClick, false);
-        }
-        return () => {
-            if (document.querySelector('body')) {
-                document.querySelector('body').removeEventListener('click', globalClick);
-            }
-        };
-    }, []);
-    return (React.createElement("div", { ref: (ref) => popoverRef.current = ref, className: classnames(className, style$2.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
-            e.stopPropagation();
-            setVisible(disabled ? false : !visible);
-        } },
-        icon,
-        React.createElement("div", { className: style$2.dropDown, style: {
-                display: `${visible ? "inline-flex" : "none"}`,
-            }, onMouseDown: (e) => {
-                e.stopPropagation();
-            } }, children)));
-};
-
-var css_248z$4 = ".style_lable__2qU9T {\n  display: inline-block;\n}\n.style_lable__2qU9T > em {\n  display: block;\n  width: 16px;\n  height: 2px;\n}\n.style_option__YhK-o {\n  font-size: 0;\n}\n.style_option__YhK-o:hover {\n  cursor: auto;\n  background-color: transparent !important;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 {\n  position: relative;\n  display: inline-block;\n  width: 25px;\n  height: 25px;\n  margin: 0 4px;\n  padding: 1px;\n  border-radius: 3px;\n  border: 1px solid transparent;\n}\n.style_option__YhK-o .style_colorItem__3Fi51:hover {\n  border-color: #fa541c;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span {\n  display: inline-block;\n  margin: 2px;\n  width: 21px;\n  height: 21px;\n  cursor: pointer;\n  border-radius: 3px;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span + span {\n  position: absolute;\n  color: white;\n  z-index: 99;\n  top: 2px;\n  left: 3px;\n}\n";
-var style$3 = {"lable":"style_lable__2qU9T","option":"style_option__YhK-o","colorItem":"style_colorItem__3Fi51"};
-styleInject(css_248z$4);
-
-const ColorPanel = (props) => {
-    const { disabled, change, areas, lable, icon, value, initValue = '#000000' } = props;
-    const currentValue = value || initValue;
-    const [selectColor, setColor] = React.useState(currentValue);
-    React.useEffect(() => setColor(currentValue), [currentValue]);
-    const colorLable = (React.createElement("span", { className: style$3.lable },
-        icon,
-        React.createElement("em", { style: { backgroundColor: selectColor } })));
-    return (React.createElement(Select, { disabled: disabled, className: classnames({ tooltip: !disabled }), initValue: initValue, value: currentValue, onChange: change, tooltip: lable, lable: colorLable }, areas.map(({ value }, idx) => (React.createElement(Select.Option, { className: style$3.option, key: idx }, (v, setv) => {
-        return value.map((colorHex, i) => (React.createElement("span", { className: style$3.colorItem, key: `${idx}-${i}`, onMouseDown: (e) => {
-                e.preventDefault();
-                if (colorHex !== v) {
-                    setv(colorHex);
-                    setColor(colorHex);
-                }
-            } },
-            React.createElement("span", { style: {
-                    backgroundColor: colorHex
-                } }),
-            v === colorHex
-                ? React.createElement(Icon, { fontIcon: "\uE61C" })
-                : '')));
-    })))));
-};
-
-var css_248z$5 = ".style_input__Ohlyv {\n  display: inline-block;\n  color: rgba(0, 0, 0, 0.85);\n  font-size: 14px;\n  padding: 1px 8px;\n  line-height: 1.33;\n  border: 1px solid #d9d9d9;\n  border-radius: 2px;\n  transition: all 0.3s;\n}\n.style_input__Ohlyv:focus {\n  border-color: #40a9ff;\n  border-right-width: 1px!important;\n  outline: 0;\n  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);\n}\n";
-var style$4 = {"input":"style_input__Ohlyv"};
-styleInject(css_248z$5);
-
-const Input = (props, ref) => {
-    const { className, placeholder, onChange = () => { }, onBlur = () => { }, onFocus } = props;
-    return React.createElement("input", { ref: ref, className: classnames(className, style$4.input), onChange: onChange, onBlur: onBlur, onFocus: onFocus, placeholder: placeholder });
-};
-var Input$1 = React.forwardRef(Input);
-
 var css_248z$6 = ".style_editorToolbar__3gucq {\n  width: 100%;\n  height: 42px;\n  border: 1px solid #e8e8e8;\n  display: flex;\n  justify-content: center;\n  background-color: white;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);\n  position: sticky;\n  top: 0;\n}\n.style_editorToolbar__3gucq button {\n  background-color: white;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog {\n  height: 100%;\n  padding: 3px 0;\n  display: inline-block;\n  border-right: 1px solid #e8e8e8;\n  box-sizing: border-box;\n  vertical-align: middle;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog:nth-child(1) {\n  border-left: 1px solid #e8e8e8;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > * {\n  box-sizing: border-box;\n  display: inline-block;\n  height: 100%;\n  font-size: 16px;\n  margin: 0 5px;\n  padding: 5px 11px;\n  border: none;\n  border-radius: 5px;\n  outline: none;\n  cursor: pointer;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *:hover {\n  background-color: #f5f5f5;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[active='true'] {\n  color: #3cb034;\n  font-weight: bold;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[disabled] {\n  background-color: transparent;\n  opacity: 0.4;\n  text-shadow: none;\n  box-shadow: none;\n  cursor: not-allowed;\n}\n";
 var style$5 = {"editorToolbar":"style_editorToolbar__3gucq","barArea":"style_barArea__1hKog"};
 styleInject(css_248z$6);
 
 const ToolBar = (props) => {
     const { event, editorState, stack } = props;
-    const inlineStyles = editorState.getCurrentInlineStyle().toJS();
     const selection = editorState.getSelection();
+    const inlineStyles = editorState
+        .getCurrentInlineStyle()
+        .toJS();
     const blockType = editorState
         .getCurrentContent()
         .getBlockForKey(selection.getStartKey())
@@ -871,85 +959,27 @@ const ToolBar = (props) => {
         .getBlockForKey(selection.getStartKey())
         .getData()
         .toJS();
-    const renderBtn = (area, action, key) => {
-        const { value, lable } = area;
-        let active = inlineStyles.includes(value) ? 'true' : 'false';
-        let disabled = false;
-        if ('撤销' === lable) {
-            disabled = stack.isBottom();
-            active = `${!disabled}`;
-        }
-        else if ('重做' === lable) {
-            disabled = stack.isTop();
-            active = `${!disabled}`;
-        }
-        return (React.createElement("button", { key: key, disabled: disabled, className: classnames({ tooltip: !disabled }), active: active, tooltip: lable, onMouseDown: e => {
-                e.preventDefault();
-                event.fire(`${action}`, value);
-            } }, area.icon));
-    };
-    const renderToolbarArea = (area, key) => {
-        let disabled = false;
-        const { action, type, areas, initValue, lable, icon } = area;
-        let currentValue = undefined;
-        if (lable === '文本和标题') {
-            currentValue = blockType;
-        }
-        else if (lable === '字号') {
-            disabled = ['header-one', 'header-two', 'header-three', 'header-four', 'header-five', 'header-six'].includes(blockType);
-            currentValue = _.findLast(inlineStyles, style => /^\d{1,2}px$/.test(style)) || initValue;
-        }
-        else if (lable === '对齐方式') {
-            try {
-                const textAlign = _.get(blockData, 'textAlign');
-                currentValue = textAlign ? JSON.stringify({ textAlign }) : initValue;
+    const renderToolBar = (tools) => {
+        return tools.map((toolbarItem, idx) => {
+            if (Array.isArray(toolbarItem)) {
+                return renderToolBar(toolbarItem);
             }
-            catch (e) { }
-        }
-        else if (lable === '字体颜色') {
-            const colorValue = _.findLast(inlineStyles, style => /^color-#\w{6}$/.test(style)) || '';
-            const color = colorValue.match(/^color-(#\w{6})$/);
-            currentValue = color ? color[1] : initValue;
-        }
-        else if (lable === '背景色') {
-            const colorValue = _.findLast(inlineStyles, style => /^background-#\w{6}$/.test(style)) || '';
-            const color = colorValue.match(/^background-(#\w{6})$/);
-            currentValue = color ? color[1] : initValue;
-        }
-        switch (type) {
-            case 'btn':
-                return areas.map((itemArea, idx) => renderBtn(itemArea, action, `${key}-${idx}`));
-            case 'select':
-                return (React.createElement(Select, { disabled: disabled, className: classnames({ tooltip: !disabled }), key: key, onChange: (style) => event.fire(`${action}`, style), initValue: initValue, value: currentValue, tooltip: lable }, areas.map(({ icon, lable = '', value }, i) => (React.createElement(Select.Option, { key: `${key}-${i}`, value: value, lable: icon
-                        ? icon
-                        : React.createElement("span", { style: { width: '45px', display: 'inline-block' }, dangerouslySetInnerHTML: { __html: lable.replace(/<[^>]+>/g, "") } }) }, (v, setV) => (React.createElement("span", { onMouseDown: (e) => {
-                        e.preventDefault();
-                        if (value !== v) {
-                            setV(value);
-                        }
-                    } },
-                    icon,
-                    React.createElement("span", { style: { minWidth: '75px', display: 'inline-block', marginLeft: '8px', verticalAlign: 'middle' }, dangerouslySetInnerHTML: { __html: `${lable}` } }),
-                    v === value
-                        ? React.createElement(Icon, { fontIcon: "\uE61C" })
-                        : '')))))));
-            case 'color':
-            case 'background':
-                return (React.createElement(ColorPanel, { key: key, disabled: disabled, initValue: initValue, value: currentValue, change: (s) => event.fire(`${action}`, `${type}-${s}`), areas: areas, lable: lable, icon: icon }));
-            case 'popover':
-                return areas.map(({ icon, lable, }, idx) => React.createElement(Popover, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
-                    React.createElement(Input$1, { onBlur: (e) => {
-                            const inputText = e.target.value;
-                            e.target.value = '';
-                            event.fire(`${action}`, inputText);
-                        } })));
-            default:
-                return '';
-        }
+            else {
+                const { render } = toolbarItem;
+                const toolBarState = {
+                    event,
+                    stack,
+                    inlineStyles,
+                    blockType,
+                    blockData
+                };
+                return (React.createElement("div", { className: style$5.barArea, key: idx }, typeof render === 'function'
+                    ? render(toolBarState, toolbarItem, idx, false)
+                    : null));
+            }
+        });
     };
-    return (React.createElement("div", { className: style$5.editorToolbar }, toolbarArea.map((toolbarArea, idx) => (React.createElement("div", { className: style$5.barArea, key: idx }, Array.isArray(toolbarArea)
-        ? toolbarArea.map((area, i) => renderToolbarArea(area, `${idx}-${i}`))
-        : renderToolbarArea(toolbarArea, idx))))));
+    return (React.createElement("div", { className: style$5.editorToolbar }, renderToolBar(toolbar)));
 };
 
 const Image = (props) => {
@@ -1168,9 +1198,9 @@ const Index = () => {
         editorState,
         setEditorState
     };
-    return (React.createElement("div", { className: style$1.page },
+    return (React.createElement("div", { className: style$4.page },
         React.createElement(ToolBar, Object.assign({}, toolBarProps)),
-        React.createElement("div", { className: style$1.main },
+        React.createElement("div", { className: style$4.main },
             React.createElement(MyEditor, Object.assign({ ref: editorRef }, editorProps)))));
 };
 

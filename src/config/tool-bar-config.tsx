@@ -3,20 +3,25 @@ import Immutable from 'immutable'
 import _ from 'lodash'
 import BlockWrapper from '../component/block-wrapper'
 import Icon from '../component/icon'
+import {renderBut, renderSelect, renderColorPanel} from './render-tool-item'
 
-export type IareasValue = {value: string | string[], icon?: JSX.Element, lable?: string}[]
-export interface Iarea {
+import Popover from '../component/popover'
+import Input from '../component/input'
+
+export type IareaItem = {value: string | string[], icon?: JSX.Element, lable?: string}
+export interface IbarItem {
   action: string
-  type: string
+  type?: string
   initValue?: string
   lable?: string
-  icon?: JSX.Element
-  areas: IareasValue
+  icon?: JSX.Element,
+  areas: IareaItem[]
+  render?: any
 }
-export type Iareas = Iarea | Iarea[]
-export interface ItoolbarArea {
-  map(arg0: (toolbarArea: any, idx: any) => JSX.Element): React.ReactNode
-  [i: number]: Iareas
+export type ItoolbarItem = IbarItem | IbarItem[]
+export interface Itoolbar {
+  map(arg0: (toolBarItem: ItoolbarItem, idx: number) => JSX.Element): React.ReactNode
+  [i: number]: ItoolbarItem
 }
 
 // 自定义块状样式的定义，使用toggleInlineStyle更换不同的key
@@ -54,7 +59,7 @@ const blockRenderMap = Immutable.Map({
 })
 
 // 配色面板的颜色
-const colors: IareasValue = [
+const colors: IareaItem[] = [
   {
     value: [
       '#000000', '#262626',
@@ -121,25 +126,24 @@ const colors: IareasValue = [
 ]
 
 // tool-bar 配置
-export const toolbarArea: ItoolbarArea = [
+export const toolbar: Itoolbar = [
   {
     action: 'changeEditorState',
-    type: 'btn',
     areas: [
       {lable: '保存', icon: <Icon fontIcon="&#xe6fe;" />, value: 'seve'},
       {lable: '撤销', icon: <Icon fontIcon="&#xe629;" />, value: 'undo'},
       {lable: '重做', icon: <Icon fontIcon="&#xe62a;" />, value: 'redo'}
-    ]
+    ],
+    render: renderBut
   }, {
     action: 'format',
-    type: 'btn',
     areas: [
       {lable: '格式刷', icon: <Icon fontIcon="&#xe617;" />, value: 'applyStyle'},
       {lable: '清除格式', icon: <Icon fontIcon="&#xe65b;" />, value: 'clearStyle'},
-    ]
+    ],
+    render: renderBut
   }, [{
     action: 'toggleBlockType',
-    type: 'select',
     initValue: 'unstyled',
     lable: '文本和标题',
     areas: [
@@ -150,10 +154,10 @@ export const toolbarArea: ItoolbarArea = [
       {lable: '<h4 style="margin: 0; display: inline-block; min-width: 120px;">标题 4</h4>', value: 'header-four'},
       {lable: '<h5 style="margin: 0; display: inline-block; min-width: 120px;">标题 5</h4>', value: 'header-five'},
       {lable: '<h6 style="margin: 0; display: inline-block; min-width: 120px;">标题 6</h4>', value: 'header-six'},
-    ]
+    ],
+    render: renderSelect
   }, {
     action: 'toggleInlineStyle',
-    type: 'select',
     initValue: '12px',
     lable: '字号',
     areas: [
@@ -169,42 +173,45 @@ export const toolbarArea: ItoolbarArea = [
       {lable: '32px', value: '32px'},
       {lable: '40px', value: '40px'},
       {lable: '48px', value: '48px'},
-    ]
+    ],
+    render: renderSelect
   }], {
     action: 'toggleInlineStyle',
-    type: 'btn',
     areas: [
       {lable: '加粗', icon: <Icon fontIcon="&#xe660;" />, value: 'BOLD'},
       {lable: '斜体', icon: <Icon fontIcon="&#xe700;" />, value: 'ITALIC'},
       {lable: '删除线', icon: <Icon fontIcon="&#xe664;" />, value: 'STRIKETHROUGH'},
       {lable: '下划线', icon: <Icon fontIcon="&#xe701;" />, value: 'UNDERLINE'},
       {lable: '更多文本样式', icon: <Icon fontIcon="&#xe632;" />, value: 'dd'},
-    ]
+    ],
+    render: renderBut
   }, [{
     action: 'toggleInlineStyle',
     type: 'color',
     initValue: '#000000',
     lable: '字体颜色',
     icon: <Icon fontIcon="&#xe601;" />,
-    areas: colors
+    areas: colors,
+    render: renderColorPanel
   }, {
     action: 'toggleInlineStyle',
     type: 'background',
     initValue: '#ffffff',
     lable: '背景色',
     icon: <Icon fontIcon="&#xe6f8;" />,
-    areas: colors
+    areas: colors,
+    render: renderColorPanel
   }],
   {
     action: 'addBlockType',
-    type: 'select',
     initValue: JSON.stringify({textAlign: 'left'}),
     lable: '对齐方式',
     areas: [
       {lable: '左对齐', icon: <Icon fontIcon="&#xe6cf;" />, value: JSON.stringify({textAlign: 'left'})},
       {lable: '居中对齐', icon: <Icon fontIcon="&#xe73e;" />, value: JSON.stringify({textAlign: 'center'})},
       {lable: '右对齐', icon: <Icon fontIcon="&#xe6cd;" />, value: JSON.stringify({textAlign: 'right'})},
-    ]
+    ],
+    render: renderSelect
   }, 
   {
     action: 'addEntity',
@@ -212,9 +219,28 @@ export const toolbarArea: ItoolbarArea = [
     initValue: JSON.stringify({textAlign: 'left'}),
     areas: [
       {lable: '插入图片', icon: <Icon fontIcon="&#xe64a;" />, value: 'image'},
-      {lable: '插入表格', icon: <Icon fontIcon="&#xe6cc;" />, value: JSON.stringify({textAlign: 'center'})},
-      {lable: '插入公示', icon: <Icon fontIcon="&#xe600;" />, value: JSON.stringify({textAlign: 'right'})},
-    ]
+      {lable: '插入表格', icon: <Icon fontIcon="&#xe6cc;" />, value: ''},
+      {lable: '插入公示', icon: <Icon fontIcon="&#xe600;" />, value: ''},
+    ],
+    render: (toolBarState, toolbarItem, key) => {
+      const {event, stack, inlineStyles} = toolBarState
+      const {action, areas} = toolbarItem
+
+      return areas.map(
+        ({icon, lable,}, idx) => 
+          <Popover 
+            key={`${key}-${idx}`} 
+            icon={icon} 
+            tooltip={lable}
+          >
+            <Input onBlur={(e) => {
+              const inputText = e.target.value
+              e.target.value = ''
+              event.fire(`${action}`, inputText)
+            }} />
+          </Popover>
+      )
+    }
   }
 ]
 

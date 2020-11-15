@@ -1,14 +1,14 @@
 import React from 'react'
 import classnames from 'classnames'
 import Select from '../select'
-import {IareasValue} from '../../config/tool-bar-config'
+import {IareaItem} from '../../config/tool-bar-config'
 import Icon from '../icon'
 import style from './style.less'
 
 interface IcolorPanel{
   change: (s: string) => void
   disabled: boolean
-  areas: IareasValue
+  areas: IareaItem[]
   lable?: string
   icon?: JSX.Element
   initValue?: string
