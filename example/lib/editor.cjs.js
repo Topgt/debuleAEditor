@@ -50024,9 +50024,94 @@ const ToolBar = (props) => {
     return (React__default['default'].createElement("div", { className: style$5.editorToolbar }, renderToolBar(toolbar)));
 };
 
+let m_panel;
+let m_ctrl;
+let m_type;
+let moving;
+let [m_start_x, m_start_y, m_to_x, m_to_y] = [0, 0, 0, 0];
+const ctrlName = 'resizable-ctrl';
+function on_mousedown(e, panelDom, ctrl, type) {
+    m_start_x = e.pageX - ctrl.offsetLeft;
+    m_start_y = e.pageY - ctrl.offsetTop;
+    m_panel = panelDom;
+    m_ctrl = ctrl;
+    m_type = type;
+    moving = setInterval(on_move, 10);
+}
+function on_move() {
+    if (moving) {
+        const min_left = m_panel.offsetLeft;
+        const min_top = m_panel.offsetTop;
+        let to_x = m_to_x - m_start_x;
+        let to_y = m_to_y - m_start_y;
+        to_x = Math.max(to_x, min_left);
+        to_y = Math.max(to_y, min_top);
+        switch (m_type) {
+            case 'r':
+                m_ctrl.style.left = `${to_x}px`;
+                m_panel.style.width = `${to_x + 10}px`;
+                break;
+            case 'b':
+                m_ctrl.style.top = `${to_y}px`;
+                m_panel.style.height = `${to_y + 10}px`;
+                break;
+            case 'rb':
+                m_ctrl.style.left = `${to_x}px`;
+                m_ctrl.style.top = `${to_y}px`;
+                m_panel.style.width = `${to_x + 20}px`;
+                m_panel.style.height = `${to_y + 20}px`;
+                break;
+        }
+    }
+}
+document.onmousemove = (e) => {
+    m_to_x = e.pageX;
+    m_to_y = e.pageY;
+};
+document.onmouseup = function () {
+    clearInterval(moving);
+    moving = false;
+    const cls = document.getElementsByClassName(ctrlName);
+    const arr = Array.prototype.slice.call(cls);
+    arr.forEach(element => {
+        element.style.top = '';
+        element.style.left = '';
+    });
+};
+function resizable(panelDom, rName, bName, rbName) {
+    var r = document.createElement('div');
+    var b = document.createElement('div');
+    var rb = document.createElement('div');
+    r.className = `${ctrlName} ${rName}`;
+    b.className = `${ctrlName} ${bName}`;
+    rb.className = `${ctrlName} ${rbName}`;
+    panelDom.appendChild(r);
+    panelDom.appendChild(b);
+    panelDom.appendChild(rb);
+    r.addEventListener('mousedown', function (e) {
+        on_mousedown(e, panelDom, r, 'r');
+    });
+    b.addEventListener('mousedown', function (e) {
+        on_mousedown(e, panelDom, b, 'b');
+    });
+    rb.addEventListener('mousedown', function (e) {
+        on_mousedown(e, panelDom, rb, 'rb');
+    });
+}
+
+var css_248z$7 = ".style_panel__FdLdF {\n  width: 400px;\n  height: 240px;\n  border: 1px solid #ccc;\n  position: relative;\n}\n.style_panel__FdLdF .style_resizableR__2UVnq {\n  position: absolute;\n  right: 0;\n  top: 0;\n  width: 10px;\n  height: 100%;\n  background-color: aqua;\n  cursor: e-resize;\n}\n.style_panel__FdLdF .style_resizableB__1XAPb {\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 10px;\n  background-color: hotpink;\n  cursor: s-resize;\n}\n.style_panel__FdLdF .style_resizableRB__10iO- {\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  width: 20px;\n  height: 20px;\n  background-color: mediumpurple;\n  cursor: se-resize;\n}\n";
+var style$6 = {"panel":"style_panel__FdLdF","resizableR":"style_resizableR__2UVnq","resizableB":"style_resizableB__1XAPb","resizableRB":"style_resizableRB__10iO-"};
+styleInject(css_248z$7);
+
 const Image = (props) => {
     const { blockProps: { src } } = props;
-    return React__default['default'].createElement("div", { style: { width: '100%' } },
+    const ref = React__default['default'].useRef(null);
+    React__default['default'].useEffect(() => {
+        if (ref !== null) {
+            resizable(ref.current, style$6.resizableR, style$6.resizableB, style$6.resizableRB);
+        }
+    }, []);
+    return React__default['default'].createElement("div", { ref: ref, className: _classnames_2_2_6_classnames(style$6.panel) },
         React__default['default'].createElement("img", { style: { width: '100%' }, src: src }));
 };
 
@@ -50099,7 +50184,8 @@ var createDecorator = (function (WrappedComponent) {
   return function (props) {
     var blockProps = props.blockProps;
     var isFocused = blockProps.isFocused,
-        blockKeyStore = blockProps.blockKeyStore;
+        blockKeyStore = blockProps.blockKeyStore,
+        setFocusToBlock = blockProps.setFocusToBlock;
     React__default['default'].useEffect(function () {
       // blockKeyStore.add(props.block.getKey())
       return function () {
@@ -50110,9 +50196,9 @@ var createDecorator = (function (WrappedComponent) {
     var click = function click(evt) {
       evt.preventDefault();
 
-      if (!isFocused) {
+      if (!isFocused()) {
         blockKeyStore.add(props.block.getKey());
-        blockProps.setFocusToBlock(props.block.getKey(), true);
+        setFocusToBlock(props.block.getKey(), true);
       }
     };
 
@@ -50187,7 +50273,7 @@ var focusPlugin = (props) => {
     return {
         blockRendererFn: (block) => {
             if (block.getType() === 'atomic') {
-                const isFocused = blockInSelectionEd(getCurrentStart, block.getKey());
+                const isFocused = () => blockInSelectionEd(getCurrentStart, block.getKey());
                 return {
                     props: {
                         isFocused,
@@ -50218,8 +50304,8 @@ var focusPlugin = (props) => {
     };
 };
 
-var css_248z$7 = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
-styleInject(css_248z$7);
+var css_248z$8 = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
+styleInject(css_248z$8);
 
 const Index = () => {
     const state = Draft_4.createEmpty();

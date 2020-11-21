@@ -3,7 +3,7 @@ import React from 'react'
 export default WrappedComponent => 
   (props) => {
     const {blockProps} = props
-    const {isFocused, blockKeyStore} = blockProps
+    const {isFocused, blockKeyStore, setFocusToBlock} = blockProps
     React.useEffect(() => {
       // blockKeyStore.add(props.block.getKey())
       return () => {
@@ -12,9 +12,9 @@ export default WrappedComponent =>
     }, [])
     const click = (evt) => {
       evt.preventDefault()
-      if (!isFocused) {
+      if (!isFocused()) {
         blockKeyStore.add(props.block.getKey())
-        blockProps.setFocusToBlock(props.block.getKey(), true)
+        setFocusToBlock(props.block.getKey(), true)
       }
     }
 

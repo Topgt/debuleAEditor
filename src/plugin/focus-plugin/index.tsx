@@ -18,7 +18,7 @@ export default (props) => {
     // 块元素的渲染
     blockRendererFn: (block: ContentBlock ) => {
       if (block.getType() === 'atomic') {
-        const isFocused = blockInSelectionEd(getCurrentStart, block.getKey())
+        const isFocused = () => blockInSelectionEd(getCurrentStart, block.getKey())
         return {
           props: {
             isFocused,
