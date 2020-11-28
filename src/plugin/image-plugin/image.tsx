@@ -1,16 +1,22 @@
 import React from 'react'
 import className from 'classnames'
-import resizable from './utils/resize'
+import Resizable from './utils/resize'
 import style from './style.less'
 
 const Image: React.FC<any> = (props) => {
   const { blockProps: {src} } = props
 
   const ref = React.useRef(null)
+  let resizeController = null
 
   React.useEffect(() => {
     if (ref !== null) {
-      resizable(ref.current, style.resizableR, style.resizableB, style.resizableRB)
+      resizeController = new Resizable(ref.current)
+    }
+    return () => {
+      if (resizeController) {
+        resizeController.dispose()
+      }
     }
   }, [])
 

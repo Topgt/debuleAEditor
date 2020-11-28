@@ -982,92 +982,109 @@ const ToolBar = (props) => {
     return (React.createElement("div", { className: style$5.editorToolbar }, renderToolBar(toolbar)));
 };
 
-let m_panel;
-let m_ctrl;
-let m_type;
-let moving;
-let [m_start_x, m_start_y, m_to_x, m_to_y] = [0, 0, 0, 0];
-const ctrlName = 'resizable-ctrl';
-function on_mousedown(e, panelDom, ctrl, type) {
-    m_start_x = e.pageX - ctrl.offsetLeft;
-    m_start_y = e.pageY - ctrl.offsetTop;
-    m_panel = panelDom;
-    m_ctrl = ctrl;
-    m_type = type;
-    moving = setInterval(on_move, 10);
-}
-function on_move() {
-    if (moving) {
-        const min_left = m_panel.offsetLeft;
-        const min_top = m_panel.offsetTop;
-        let to_x = m_to_x - m_start_x;
-        let to_y = m_to_y - m_start_y;
-        to_x = Math.max(to_x, min_left);
-        to_y = Math.max(to_y, min_top);
-        switch (m_type) {
-            case 'r':
-                m_ctrl.style.left = `${to_x}px`;
-                m_panel.style.width = `${to_x + 10}px`;
-                break;
-            case 'b':
-                m_ctrl.style.top = `${to_y}px`;
-                m_panel.style.height = `${to_y + 10}px`;
-                break;
-            case 'rb':
-                m_ctrl.style.left = `${to_x}px`;
-                m_ctrl.style.top = `${to_y}px`;
-                m_panel.style.width = `${to_x + 20}px`;
-                m_panel.style.height = `${to_y + 20}px`;
-                break;
-        }
-    }
-}
-document.onmousemove = (e) => {
-    m_to_x = e.pageX;
-    m_to_y = e.pageY;
-};
-document.onmouseup = function () {
-    clearInterval(moving);
-    moving = false;
-    const cls = document.getElementsByClassName(ctrlName);
-    const arr = Array.prototype.slice.call(cls);
-    arr.forEach(element => {
-        element.style.top = '';
-        element.style.left = '';
-    });
-};
-function resizable(panelDom, rName, bName, rbName) {
-    var r = document.createElement('div');
-    var b = document.createElement('div');
-    var rb = document.createElement('div');
-    r.className = `${ctrlName} ${rName}`;
-    b.className = `${ctrlName} ${bName}`;
-    rb.className = `${ctrlName} ${rbName}`;
-    panelDom.appendChild(r);
-    panelDom.appendChild(b);
-    panelDom.appendChild(rb);
-    r.addEventListener('mousedown', function (e) {
-        on_mousedown(e, panelDom, r, 'r');
-    });
-    b.addEventListener('mousedown', function (e) {
-        on_mousedown(e, panelDom, b, 'b');
-    });
-    rb.addEventListener('mousedown', function (e) {
-        on_mousedown(e, panelDom, rb, 'rb');
-    });
-}
-
 var css_248z$7 = ".style_panel__FdLdF {\n  width: 400px;\n  height: 240px;\n  border: 1px solid #ccc;\n  position: relative;\n}\n.style_panel__FdLdF .style_resizableR__2UVnq {\n  position: absolute;\n  right: 0;\n  top: 0;\n  width: 10px;\n  height: 100%;\n  background-color: aqua;\n  cursor: e-resize;\n}\n.style_panel__FdLdF .style_resizableB__1XAPb {\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 10px;\n  background-color: hotpink;\n  cursor: s-resize;\n}\n.style_panel__FdLdF .style_resizableRB__10iO- {\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  width: 20px;\n  height: 20px;\n  background-color: mediumpurple;\n  cursor: se-resize;\n}\n";
 var style$6 = {"panel":"style_panel__FdLdF","resizableR":"style_resizableR__2UVnq","resizableB":"style_resizableB__1XAPb","resizableRB":"style_resizableRB__10iO-"};
 styleInject(css_248z$7);
 
+const rName = style$6.resizableR;
+const bName = style$6.resizableB;
+const rbName = style$6.resizableRB;
+class Resizable {
+    constructor(panelDom) {
+        this.ctrlName = 'resizable-ctrl';
+        this.m_start_x = 0;
+        this.m_start_y = 0;
+        this.m_to_x = 0;
+        this.m_to_y = 0;
+        this.on_move = () => {
+            if (this.moving) {
+                const min_left = this.m_panel.offsetLeft;
+                const min_top = this.m_panel.offsetTop;
+                let to_x = this.m_to_x - this.m_start_x;
+                let to_y = this.m_to_y - this.m_start_y;
+                to_x = Math.max(to_x, min_left);
+                to_y = Math.max(to_y, min_top);
+                switch (this.m_type) {
+                    case 'r':
+                        this.m_ctrl.style.left = `${to_x}px`;
+                        this.m_panel.style.width = `${to_x + 10}px`;
+                        break;
+                    case 'b':
+                        this.m_ctrl.style.top = `${to_y}px`;
+                        this.m_panel.style.height = `${to_y + 10}px`;
+                        break;
+                    case 'rb':
+                        this.m_ctrl.style.left = `${to_x}px`;
+                        this.m_ctrl.style.top = `${to_y}px`;
+                        this.m_panel.style.width = `${to_x + 20}px`;
+                        this.m_panel.style.height = `${to_y + 20}px`;
+                        break;
+                }
+            }
+        };
+        this.on_mouseup = (e) => {
+            clearInterval(this.moving);
+            this.moving = false;
+            const cls = document.getElementsByClassName(this.ctrlName);
+            const arr = Array.prototype.slice.call(cls);
+            arr.forEach(element => {
+                element.style.top = '';
+                element.style.left = '';
+            });
+        };
+        this.on_mousemove = (e) => {
+            this.m_to_x = e.pageX;
+            this.m_to_y = e.pageY;
+        };
+        var r = document.createElement('div');
+        var b = document.createElement('div');
+        var rb = document.createElement('div');
+        r.className = `${this.ctrlName} ${rName}`;
+        b.className = `${this.ctrlName} ${bName}`;
+        rb.className = `${this.ctrlName} ${rbName}`;
+        this.m_panel = panelDom;
+        this.m_panel.appendChild(r);
+        this.m_panel.appendChild(b);
+        this.m_panel.appendChild(rb);
+        r.addEventListener('mousedown', (e) => {
+            this.on_mousedown(e, panelDom, r, 'r');
+        });
+        b.addEventListener('mousedown', (e) => {
+            this.on_mousedown(e, panelDom, b, 'b');
+        });
+        rb.addEventListener('mousedown', (e) => {
+            this.on_mousedown(e, panelDom, rb, 'rb');
+        });
+        document.addEventListener('mousemove', this.on_mousemove);
+        document.addEventListener('mouseup', this.on_mouseup);
+    }
+    dispose() {
+        document.removeEventListener('mousemove', this.on_mousemove);
+        document.removeEventListener('mouseup', this.on_mouseup);
+    }
+    on_mousedown(e, panelDom, ctrl, type) {
+        this.m_start_x = e.pageX - ctrl.offsetLeft;
+        this.m_start_y = e.pageY - ctrl.offsetTop;
+        this.m_panel = panelDom;
+        this.m_ctrl = ctrl;
+        this.m_type = type;
+        this.moving = setInterval(this.on_move, 10);
+    }
+}
+
 const Image = (props) => {
     const { blockProps: { src } } = props;
     const ref = React.useRef(null);
+    let resizeController = null;
     React.useEffect(() => {
         if (ref !== null) {
-            resizable(ref.current, style$6.resizableR, style$6.resizableB, style$6.resizableRB);
+            resizeController = new Resizable(ref.current);
         }
+        return () => {
+            if (resizeController) {
+                resizeController.dispose();
+            }
+        };
     }, []);
     return React.createElement("div", { ref: ref, className: classnames(style$6.panel) },
         React.createElement("img", { style: { width: '100%' }, src: src }));

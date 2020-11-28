@@ -1,97 +1,116 @@
-let m_panel
-let m_ctrl
-let m_type
-// moving鼠标是否按在控制元素，开始拖动；m_start_x/y鼠标相对ctrl的left/top；m_to_y鼠标的新位置
-let moving
-let [m_start_x, m_start_y, m_to_x, m_to_y] = [0, 0, 0, 0]
+import style from '../style.less'
 
-const ctrlName = 'resizable-ctrl'
+const rName = style.resizableR
+const bName = style.resizableB
+const rbName = style.resizableRB
 
-// 为控制元素支持拖拽
-function on_mousedown(e:MouseEvent, panelDom, ctrl, type) {
-  m_start_x = e.pageX - ctrl.offsetLeft
-  m_start_y = e.pageY - ctrl.offsetTop
-  m_panel = panelDom
-  m_ctrl = ctrl
-  m_type = type
+class Resizable {
+  private ctrlName = 'resizable-ctrl'
 
-  // 开始侦听处理移动事件
-  moving = setInterval(on_move, 10)
-}
+  private m_panel
+  private m_ctrl
+  private m_type
 
-function on_move() {
-  // 如果鼠标在移动
-  if (moving) {
-    // 拖动范围限定，这个限定很不合理！！！，还不如直接设一个最小值呢
-    const min_left = m_panel.offsetLeft
-    const min_top = m_panel.offsetTop
-    let to_x = m_to_x - m_start_x
-    let to_y = m_to_y - m_start_y
+  private moving
+  private m_start_x = 0
+  private m_start_y = 0
+  private m_to_x = 0
+  private m_to_y = 0
 
-    to_x = Math.max(to_x, min_left)
-    to_y = Math.max(to_y, min_top)
+  constructor(panelDom) {
+    var r = document.createElement('div')
+    var b = document.createElement('div')
+    var rb = document.createElement('div')
 
-    switch (m_type) {
-      case 'r':
-        m_ctrl.style.left = `${to_x}px`
-        // 加上控制元素的宽度10防止跳动
-        m_panel.style.width = `${to_x + 10}px`
-        break
-      case 'b':
-        m_ctrl.style.top = `${to_y}px`
-        m_panel.style.height = `${to_y + 10}px`
-        break
-      case 'rb':
-        m_ctrl.style.left = `${to_x}px`
-        m_ctrl.style.top = `${to_y}px`
-        m_panel.style.width = `${to_x + 20}px`
-        m_panel.style.height = `${to_y + 20}px`
-        break
-      }
+    r.className = `${this.ctrlName} ${rName}`
+    b.className = `${this.ctrlName} ${bName}`
+    rb.className = `${this.ctrlName} ${rbName}`
+
+    this.m_panel = panelDom
+
+    this.m_panel.appendChild(r)
+    this.m_panel.appendChild(b)
+    this.m_panel.appendChild(rb)
+
+    // 为控制元素设置拖拽处理
+    r.addEventListener('mousedown', (e) => {
+      this.on_mousedown(e, panelDom, r, 'r')
+    })
+    b.addEventListener('mousedown', (e) => {
+      this.on_mousedown(e, panelDom, b, 'b')
+    })
+    rb.addEventListener('mousedown', (e) => {
+      this.on_mousedown(e, panelDom, rb, 'rb')
+    })
+
+    document.addEventListener('mousemove', this.on_mousemove)
+    document.addEventListener('mouseup', this.on_mouseup)
   }
-}
 
-document.onmousemove = (e: MouseEvent) => {
-    m_to_x = e.pageX
-    m_to_y = e.pageY
-}
-document.onmouseup = function() {
-    clearInterval(moving)
-    moving = false
+  public dispose () {
+    document.removeEventListener('mousemove', this.on_mousemove)
+    document.removeEventListener('mouseup', this.on_mouseup)
+  }
+
+  private on_mousedown(e:MouseEvent, panelDom, ctrl, type) {
+    this.m_start_x = e.pageX - ctrl.offsetLeft
+    this.m_start_y = e.pageY - ctrl.offsetTop
+    this.m_panel = panelDom
+    this.m_ctrl = ctrl
+    this.m_type = type
+  
+    // 开始侦听处理移动事件
+    this.moving = setInterval(this.on_move, 10)
+  }
+  
+  private on_move = () => {
+    // 如果鼠标在移动
+    if (this.moving) {
+      // 拖动范围限定，这个限定很不合理！！！，还不如直接设一个最小值呢
+      const min_left = this.m_panel.offsetLeft
+      const min_top = this.m_panel.offsetTop
+      let to_x = this.m_to_x - this.m_start_x
+      let to_y = this.m_to_y - this.m_start_y
+
+      to_x = Math.max(to_x, min_left)
+      to_y = Math.max(to_y, min_top)
+
+      switch (this.m_type) {
+        case 'r':
+          this.m_ctrl.style.left = `${to_x}px`
+          // 加上控制元素的宽度10防止跳动
+          this.m_panel.style.width = `${to_x + 10}px`
+          break
+        case 'b':
+          this.m_ctrl.style.top = `${to_y}px`
+          this.m_panel.style.height = `${to_y + 10}px`
+          break
+        case 'rb':
+          this.m_ctrl.style.left = `${to_x}px`
+          this.m_ctrl.style.top = `${to_y}px`
+          this.m_panel.style.width = `${to_x + 20}px`
+          this.m_panel.style.height = `${to_y + 20}px`
+          break
+      }
+    }
+  }
+
+  private on_mouseup = (e) => {
+    clearInterval(this.moving)
+    this.moving = false
     // 解决某一边元素动而右下角元素不动的bug
-    const cls = document.getElementsByClassName(ctrlName)
+    const cls = document.getElementsByClassName(this.ctrlName)
     const arr = Array.prototype.slice.call(cls)
     arr.forEach(element => {
       element.style.top = ''
       element.style.left =''
     })
+  }
+
+  private on_mousemove = (e: MouseEvent) => {
+    this.m_to_x = e.pageX
+    this.m_to_y = e.pageY
+  }
 }
 
-// 为面板加入控制元素
-function resizable(panelDom: HTMLElement, rName, bName, rbName) {
-    var r = document.createElement('div')
-    var b = document.createElement('div')
-    var rb = document.createElement('div')
-
-    r.className = `${ctrlName} ${rName}`
-    b.className = `${ctrlName} ${bName}`
-    rb.className = `${ctrlName} ${rbName}`
-
-    panelDom.appendChild(r)
-    panelDom.appendChild(b)
-    panelDom.appendChild(rb)
-
-    // 为控制元素设置拖拽处理
-    r.addEventListener('mousedown', function(e) {
-        on_mousedown(e, panelDom, r, 'r')
-    })
-    b.addEventListener('mousedown', function(e) {
-        on_mousedown(e, panelDom, b, 'b')
-    })
-    rb.addEventListener('mousedown', function(e) {
-        on_mousedown(e, panelDom, rb, 'rb')
-    })
-}
-
-// Resizable(document.getElementById('resizable'))
-export default resizable
+export default Resizable
