@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import style from '../style.less'
 
 const rName = style.resizableR
@@ -5,7 +6,7 @@ const bName = style.resizableB
 const rbName = style.resizableRB
 
 class Resizable {
-  private ctrlName = 'resizable-ctrl'
+  private ctrlName
 
   private m_panel
   private m_ctrl
@@ -17,10 +18,14 @@ class Resizable {
   private m_to_x = 0
   private m_to_y = 0
 
+  private fn
+
   constructor(panelDom) {
     var r = document.createElement('div')
     var b = document.createElement('div')
     var rb = document.createElement('div')
+
+    this.ctrlName = _.uniqueId('resizable-ctrl');
 
     r.className = `${this.ctrlName} ${rName}`
     b.className = `${this.ctrlName} ${bName}`
@@ -50,6 +55,10 @@ class Resizable {
   public dispose () {
     document.removeEventListener('mousemove', this.on_mousemove)
     document.removeEventListener('mouseup', this.on_mouseup)
+  }
+
+  public move_ed (fn) {
+    this.fn = fn
   }
 
   private on_mousedown(e:MouseEvent, panelDom, ctrl, type) {
@@ -98,6 +107,11 @@ class Resizable {
   private on_mouseup = (e) => {
     clearInterval(this.moving)
     this.moving = false
+    if (typeof this.fn === 'function') {
+      const width = this.m_panel.style.width
+      const height = this.m_panel.style.height
+      this.fn(width, height)
+    }
     // 解决某一边元素动而右下角元素不动的bug
     const cls = document.getElementsByClassName(this.ctrlName)
     const arr = Array.prototype.slice.call(cls)

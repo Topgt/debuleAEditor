@@ -1,5 +1,5 @@
 import React from 'react'
-import { ContentBlock, RichUtils } from 'draft-js'
+import { EditorState, ContentBlock, RichUtils } from 'draft-js'
 import {IpluginProps} from '../plugin.d'
 import Image from './image'
 
@@ -30,16 +30,30 @@ export default (props) => {
         const contentState = getCurrentStart().getCurrentContent()
         const entity = block.getEntityAt(0)
         if (!entity) return null
+        const upDateEntity = (data) => {
+          const newContentState = getCurrentStart().getCurrentContent()
+          newContentState.mergeEntityData(entity, data)
+          let newEditorState = EditorState.createWithContent(newContentState)
+
+          newEditorState = EditorState.forceSelection(
+            newEditorState,
+            newEditorState.getCurrentContent().getSelectionAfter()
+          )
+          setEditorState(newEditorState)
+        }
         const type = contentState.getEntity(entity).getType()
         const data = contentState.getEntity(entity).getData()
         if (type === 'IMAGE' || type === 'image') {
-          const {src} = data || {}
+          const {src, width, height} = data || {}
           return {
             component: Image,
             editable: false,
             props: {
-              src
-            },
+              src,
+              width, 
+              height,
+              upDateEntity,
+            }
           }
         }
         return null

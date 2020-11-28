@@ -50033,7 +50033,6 @@ const bName = style$6.resizableB;
 const rbName = style$6.resizableRB;
 class Resizable {
     constructor(panelDom) {
-        this.ctrlName = 'resizable-ctrl';
         this.m_start_x = 0;
         this.m_start_y = 0;
         this.m_to_x = 0;
@@ -50067,6 +50066,11 @@ class Resizable {
         this.on_mouseup = (e) => {
             clearInterval(this.moving);
             this.moving = false;
+            if (typeof this.fn === 'function') {
+                const width = this.m_panel.style.width;
+                const height = this.m_panel.style.height;
+                this.fn(width, height);
+            }
             const cls = document.getElementsByClassName(this.ctrlName);
             const arr = Array.prototype.slice.call(cls);
             arr.forEach(element => {
@@ -50081,6 +50085,7 @@ class Resizable {
         var r = document.createElement('div');
         var b = document.createElement('div');
         var rb = document.createElement('div');
+        this.ctrlName = lodash.uniqueId('resizable-ctrl');
         r.className = `${this.ctrlName} ${rName}`;
         b.className = `${this.ctrlName} ${bName}`;
         rb.className = `${this.ctrlName} ${rbName}`;
@@ -50104,6 +50109,9 @@ class Resizable {
         document.removeEventListener('mousemove', this.on_mousemove);
         document.removeEventListener('mouseup', this.on_mouseup);
     }
+    move_ed(fn) {
+        this.fn = fn;
+    }
     on_mousedown(e, panelDom, ctrl, type) {
         this.m_start_x = e.pageX - ctrl.offsetLeft;
         this.m_start_y = e.pageY - ctrl.offsetTop;
@@ -50115,20 +50123,34 @@ class Resizable {
 }
 
 const Image = (props) => {
-    const { blockProps: { src } } = props;
+    const { blockProps } = props;
+    const { src, width, height, upDateEntity } = blockProps;
+    const widthRef = React__default['default'].useRef(width);
+    const heightRef = React__default['default'].useRef(height);
+    widthRef.current = width;
+    heightRef.current = height;
     const ref = React__default['default'].useRef(null);
     let resizeController = null;
     React__default['default'].useEffect(() => {
         if (ref !== null) {
             resizeController = new Resizable(ref.current);
+            resizeController.move_ed((w, h) => {
+                if (w && h && (w !== widthRef.current || h !== heightRef.current)) {
+                    typeof upDateEntity === 'function' && upDateEntity({ width: w, height: h });
+                }
+            });
         }
         return () => {
             if (resizeController) {
                 resizeController.dispose();
+                resizeController = null;
             }
         };
     }, []);
-    return React__default['default'].createElement("div", { ref: ref, className: _classnames_2_2_6_classnames(style$6.panel) },
+    const inlineStyle = {};
+    width && (inlineStyle.width = width);
+    height && (inlineStyle.height = height);
+    return React__default['default'].createElement("div", { ref: ref, className: _classnames_2_2_6_classnames(style$6.panel), style: inlineStyle },
         React__default['default'].createElement("img", { style: { width: '100%' }, src: src }));
 };
 
@@ -50159,16 +50181,26 @@ var imagePlugin = (props) => {
                 const entity = block.getEntityAt(0);
                 if (!entity)
                     return null;
+                const upDateEntity = (data) => {
+                    const newContentState = getCurrentStart().getCurrentContent();
+                    newContentState.mergeEntityData(entity, data);
+                    let newEditorState = Draft_4.createWithContent(newContentState);
+                    newEditorState = Draft_4.forceSelection(newEditorState, newEditorState.getCurrentContent().getSelectionAfter());
+                    setEditorState(newEditorState);
+                };
                 const type = contentState.getEntity(entity).getType();
                 const data = contentState.getEntity(entity).getData();
                 if (type === 'IMAGE' || type === 'image') {
-                    const { src } = data || {};
+                    const { src, width, height } = data || {};
                     return {
                         component: Image,
                         editable: false,
                         props: {
-                            src
-                        },
+                            src,
+                            width,
+                            height,
+                            upDateEntity,
+                        }
                     };
                 }
                 return null;
