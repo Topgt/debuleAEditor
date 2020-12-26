@@ -1,10 +1,11 @@
 
 import babel from 'rollup-plugin-babel'
-import postcss from 'rollup-plugin-postcss'
+import postcss from 'rollup-plugin-postcss' // 解析less
 import typescript from 'rollup-plugin-typescript2'
-import common from 'rollup-plugin-commonjs'
-import resolve from 'rollup-plugin-node-resolve'
+import resolve from 'rollup-plugin-node-resolve' //解析 node_modules 中的模块
+import common from 'rollup-plugin-commonjs' //转换 CJS -> ESM, 通常配合上面一个插件使用
 import { terser } from "rollup-plugin-terser"; // 压缩文件
+import image from './rollup-plugin/image';
 
 const env = process.env.NODE_ENV
 
@@ -27,6 +28,7 @@ const config = [{
         'immutable': ['OrderedSet', 'Map']
       }
     }),
+    image(),
     postcss({
       modules: true,
     })
@@ -42,6 +44,7 @@ const config = [{
     format: 'esm'
   },
   plugins: [
+    image(),
     babel(), 
     typescript(), 
     postcss({

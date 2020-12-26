@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { EditorState, CharacterMetadata, Modifier, SelectionState, AtomicBlockUtils, RichUtils, convertToRaw, Editor, DefaultDraftBlockRenderMap } from 'draft-js';
 import _ from 'lodash';
 import Immutable, { OrderedSet, Map, List } from 'immutable';
@@ -331,6 +331,93 @@ const Icon = (props) => {
     return React.createElement("span", { className: style.iconfont, dangerouslySetInnerHTML: { __html: `${fontIcon}` } });
 };
 
+var css_248z$1 = ".style_popover__2AjgS {\n  position: relative;\n}\n.style_popover__2AjgS .style_btn__7PHp2 {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2AjgS .style_dropDown__3aZqZ {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
+var style$1 = {"popover":"style_popover__2AjgS","btn":"style_btn__7PHp2","dropDown":"style_dropDown__3aZqZ"};
+styleInject(css_248z$1);
+
+const Popover = (props) => {
+    const { className, lable, icon, children, disabled = false, tooltip } = props;
+    const popoverRef = React.useRef(null);
+    const [visible, setVisible] = React.useState(false);
+    React.useEffect(() => {
+        const globalClick = (e) => {
+            let target = e.target;
+            while (target && target.nodeName !== 'BODY') {
+                if (target === popoverRef.current) {
+                    e.preventDefault();
+                    return;
+                }
+                target = target.parentElement;
+            }
+            if (!target || target.nodeName === 'BODY') {
+                e.preventDefault();
+                setVisible(false);
+                return;
+            }
+        };
+        if (document.querySelector('body')) {
+            document.querySelector('body').addEventListener('click', globalClick, false);
+        }
+        return () => {
+            if (document.querySelector('body')) {
+                document.querySelector('body').removeEventListener('click', globalClick);
+            }
+        };
+    }, []);
+    return (React.createElement("div", { ref: (ref) => popoverRef.current = ref, className: classnames(className, style$1.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
+            e.stopPropagation();
+            setVisible(disabled ? false : !visible);
+        } },
+        icon,
+        React.createElement("div", { className: style$1.dropDown, style: {
+                display: `${visible ? "inline-flex" : "none"}`,
+            }, onMouseDown: (e) => {
+                e.stopPropagation();
+            } }, children)));
+};
+
+var css_248z$2 = ".style_tablepicker__3pqMO {\n  user-select: none;\n  visibility: visible;\n  width: 220px;\n}\n.style_tablepicker__3pqMO .style_body__3OwhL {\n  width: inherit;\n  height: inherit;\n}\n.style_tablepicker__3pqMO .style_body__3OwhL .style_pickarea__grRQf {\n  width: inherit;\n  height: 240px;\n}\n.style_tablepicker__3pqMO .style_body__3OwhL .style_infoarea__2LK-F {\n  padding-left: 8px;\n  height: 14px;\n  margin-bottom: 5px;\n  font-size: 12px;\n}\n";
+var style$2 = {"tablepicker":"style_tablepicker__3pqMO","body":"style_body__3OwhL","pickarea":"style_pickarea__grRQf","infoarea":"style_infoarea__2LK-F"};
+styleInject(css_248z$2);
+
+var src = 'data:image/gif;base64,R0lGODlhFgAWAKECAPj4+Onp6f///////yH5BAEKAAIALAAAAAAWABYAAAJAlI+pFu0P3wmg2otBm7nbzXgeKFDAiaYqaaouyr6yFnCzG99rHepp7jsBg0NfUXe8JWdLGSsChUyiVN7iis1mCwA7';
+
+var src$1 = 'data:image/gif;base64,R0lGODlhFgAWAKECAN3q+8PZ/////////yH5BAEKAAIALAAAAAAWABYAAAJAlI+pFu0P3wmg2otBm7nbzXgeKFDAiaYqaaouyr6yFnCzG99rHepp7jsBg0NfUXe8JWdLGSsChUyiVN7iis1mCwA7';
+
+var rentable = (toolBarState, toolbarItem, key) => {
+    const { action, areas } = toolbarItem;
+    const tableRef = useRef(null);
+    const [cols, setCols] = React.useState(0);
+    const [rows, setRows] = React.useState(0);
+    const mouseMove = (evt) => {
+        const sideLen = 22;
+        const el = evt.target || evt.srcElement;
+        const bcr = el.getBoundingClientRect();
+        const offset = {
+            left: evt.clientX - Math.round(bcr.left),
+            top: evt.clientY - Math.round(bcr.top)
+        };
+        const numCols = Math.ceil(offset.left / sideLen);
+        const numRows = Math.ceil(offset.top / sideLen);
+        if (cols !== numCols || rows !== numRows) {
+            setCols(numCols);
+            setRows(numRows);
+            let style = tableRef.current.querySelector('.overlay').style;
+            style.width = numCols * sideLen + "px";
+            style.height = numRows * sideLen + "px";
+            let labelDom = tableRef.current.querySelector('.edui-label') || {};
+            labelDom.innerHTML = `${numCols} 列 x ${numRows} 行`;
+        }
+    };
+    return areas.map(({ icon, lable, }, idx) => React.createElement(Popover, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
+        React.createElement("div", { className: style$2.tablepicker, ref: tableRef },
+            React.createElement("div", { className: style$2.body },
+                React.createElement("div", { className: style$2.infoarea },
+                    React.createElement("span", { className: "edui-label" })),
+                React.createElement("div", { className: style$2.pickarea, style: { backgroundImage: `url(${src})` }, onMouseMove: mouseMove },
+                    React.createElement("div", { className: "overlay", style: { backgroundImage: `url(${src$1})` } }))))));
+};
+
 const renderBut = (toolBarState, toolbarItem, key) => {
     const { event, stack, inlineStyles } = toolBarState;
     const { action, areas } = toolbarItem;
@@ -355,9 +442,9 @@ const renderBut = (toolBarState, toolbarItem, key) => {
 
 const Context = React.createContext({});
 
-var css_248z$1 = ".style_select__Os_gC {\n  position: relative;\n  display: inline-block;\n  outline: none;\n}\n.style_select__Os_gC .style_lake__8HnBa {\n  display: inline-block;\n  height: 100%;\n  padding-right: 20px;\n  white-space: nowrap;\n}\n.style_select__Os_gC .style_lake__8HnBa > i {\n  position: relative;\n}\n.style_select__Os_gC .style_lake__8HnBa > i:after {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 7px;\n  left: 10px;\n  border-width: 8px 5px 8px 5px;\n  border-style: solid;\n  border-color: #555 transparent transparent transparent;\n}\n.style_select__Os_gC .style_dropDown__ZSRCu {\n  position: absolute;\n  padding: 5px 0;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n.style_select__Os_gC .style_option__g9LRZ {\n  padding: 3px 8px;\n  white-space: nowrap;\n  cursor: pointer;\n}\n.style_select__Os_gC .style_option__g9LRZ:hover {\n  background-color: #f5f5f5;\n}\n";
+var css_248z$3 = ".style_select__Os_gC {\n  position: relative;\n  display: inline-block;\n  outline: none;\n}\n.style_select__Os_gC .style_lake__8HnBa {\n  display: inline-block;\n  height: 100%;\n  padding-right: 20px;\n  white-space: nowrap;\n}\n.style_select__Os_gC .style_lake__8HnBa > i {\n  position: relative;\n}\n.style_select__Os_gC .style_lake__8HnBa > i:after {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 7px;\n  left: 10px;\n  border-width: 8px 5px 8px 5px;\n  border-style: solid;\n  border-color: #555 transparent transparent transparent;\n}\n.style_select__Os_gC .style_dropDown__ZSRCu {\n  position: absolute;\n  padding: 5px 0;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n.style_select__Os_gC .style_option__g9LRZ {\n  padding: 3px 8px;\n  white-space: nowrap;\n  cursor: pointer;\n}\n.style_select__Os_gC .style_option__g9LRZ:hover {\n  background-color: #f5f5f5;\n}\n";
 var styl = {"select":"style_select__Os_gC","lake":"style_lake__8HnBa","dropDown":"style_dropDown__ZSRCu","option":"style_option__g9LRZ"};
-styleInject(css_248z$1);
+styleInject(css_248z$3);
 
 const Option = props => {
     const { value, children, lable, className, style } = props;
@@ -475,20 +562,20 @@ const renderSelect = (toolBarState, toolbarItem, key) => {
             : '')))))));
 };
 
-var css_248z$2 = ".style_lable__2qU9T {\n  display: inline-block;\n}\n.style_lable__2qU9T > em {\n  display: block;\n  width: 16px;\n  height: 2px;\n}\n.style_option__YhK-o {\n  font-size: 0;\n}\n.style_option__YhK-o:hover {\n  cursor: auto;\n  background-color: transparent !important;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 {\n  position: relative;\n  display: inline-block;\n  width: 25px;\n  height: 25px;\n  margin: 0 4px;\n  padding: 1px;\n  border-radius: 3px;\n  border: 1px solid transparent;\n}\n.style_option__YhK-o .style_colorItem__3Fi51:hover {\n  border-color: #fa541c;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span {\n  display: inline-block;\n  margin: 2px;\n  width: 21px;\n  height: 21px;\n  cursor: pointer;\n  border-radius: 3px;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span + span {\n  position: absolute;\n  color: white;\n  z-index: 99;\n  top: 2px;\n  left: 3px;\n}\n";
-var style$1 = {"lable":"style_lable__2qU9T","option":"style_option__YhK-o","colorItem":"style_colorItem__3Fi51"};
-styleInject(css_248z$2);
+var css_248z$4 = ".style_lable__2qU9T {\n  display: inline-block;\n}\n.style_lable__2qU9T > em {\n  display: block;\n  width: 16px;\n  height: 2px;\n}\n.style_option__YhK-o {\n  font-size: 0;\n}\n.style_option__YhK-o:hover {\n  cursor: auto;\n  background-color: transparent !important;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 {\n  position: relative;\n  display: inline-block;\n  width: 25px;\n  height: 25px;\n  margin: 0 4px;\n  padding: 1px;\n  border-radius: 3px;\n  border: 1px solid transparent;\n}\n.style_option__YhK-o .style_colorItem__3Fi51:hover {\n  border-color: #fa541c;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span {\n  display: inline-block;\n  margin: 2px;\n  width: 21px;\n  height: 21px;\n  cursor: pointer;\n  border-radius: 3px;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span + span {\n  position: absolute;\n  color: white;\n  z-index: 99;\n  top: 2px;\n  left: 3px;\n}\n";
+var style$3 = {"lable":"style_lable__2qU9T","option":"style_option__YhK-o","colorItem":"style_colorItem__3Fi51"};
+styleInject(css_248z$4);
 
 const ColorPanel = (props) => {
     const { disabled, change, areas, lable, icon, value, initValue = '#000000' } = props;
     const currentValue = value || initValue;
     const [selectColor, setColor] = React.useState(currentValue);
     React.useEffect(() => setColor(currentValue), [currentValue]);
-    const colorLable = (React.createElement("span", { className: style$1.lable },
+    const colorLable = (React.createElement("span", { className: style$3.lable },
         icon,
         React.createElement("em", { style: { backgroundColor: selectColor } })));
-    return (React.createElement(Select, { disabled: disabled, className: classnames({ tooltip: !disabled }), initValue: initValue, value: currentValue, onChange: change, tooltip: lable, lable: colorLable }, areas.map(({ value }, idx) => (React.createElement(Select.Option, { className: style$1.option, key: idx }, (v, setv) => {
-        return value.map((colorHex, i) => (React.createElement("span", { className: style$1.colorItem, key: `${idx}-${i}`, onMouseDown: (e) => {
+    return (React.createElement(Select, { disabled: disabled, className: classnames({ tooltip: !disabled }), initValue: initValue, value: currentValue, onChange: change, tooltip: lable, lable: colorLable }, areas.map(({ value }, idx) => (React.createElement(Select.Option, { className: style$3.option, key: idx }, (v, setv) => {
+        return value.map((colorHex, i) => (React.createElement("span", { className: style$3.colorItem, key: `${idx}-${i}`, onMouseDown: (e) => {
                 e.preventDefault();
                 if (colorHex !== v) {
                     setv(colorHex);
@@ -522,11 +609,11 @@ const renderColorPanel = (toolBarState, toolbarItem, key) => {
     return (React.createElement(ColorPanel, { key: key, disabled: disabled, initValue: initValue, value: currentValue, change: (s) => event.fire(`${action}`, `${type}-${s}`), areas: areas, lable: lable, icon: icon }));
 };
 
-var css_248z$3 = ".style_popover__2RxA8 {\n  position: relative;\n}\n.style_popover__2RxA8 .style_btn__1-e3m {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2RxA8 .style_dropDown__2LkP4 {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
-var style$2 = {"popover":"style_popover__2RxA8","btn":"style_btn__1-e3m","dropDown":"style_dropDown__2LkP4"};
-styleInject(css_248z$3);
+var css_248z$5 = ".style_popover__2RxA8 {\n  position: relative;\n}\n.style_popover__2RxA8 .style_btn__1-e3m {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2RxA8 .style_dropDown__2LkP4 {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
+var style$4 = {"popover":"style_popover__2RxA8","btn":"style_btn__1-e3m","dropDown":"style_dropDown__2LkP4"};
+styleInject(css_248z$5);
 
-const Popover = (props) => {
+const Popover$1 = (props) => {
     const { className, lable, icon, children, disabled = false, tooltip } = props;
     const popoverRef = React.useRef(null);
     const [visible, setVisible] = React.useState(false);
@@ -555,25 +642,25 @@ const Popover = (props) => {
             }
         };
     }, []);
-    return (React.createElement("div", { ref: (ref) => popoverRef.current = ref, className: classnames(className, style$2.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
+    return (React.createElement("div", { ref: (ref) => popoverRef.current = ref, className: classnames(className, style$4.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
             e.stopPropagation();
             setVisible(disabled ? false : !visible);
         } },
         icon,
-        React.createElement("div", { className: style$2.dropDown, style: {
+        React.createElement("div", { className: style$4.dropDown, style: {
                 display: `${visible ? "inline-flex" : "none"}`,
             }, onMouseDown: (e) => {
                 e.stopPropagation();
             } }, children)));
 };
 
-var css_248z$4 = ".style_input__Ohlyv {\n  display: inline-block;\n  color: rgba(0, 0, 0, 0.85);\n  font-size: 14px;\n  padding: 1px 8px;\n  line-height: 1.33;\n  border: 1px solid #d9d9d9;\n  border-radius: 2px;\n  transition: all 0.3s;\n}\n.style_input__Ohlyv:focus {\n  border-color: #40a9ff;\n  border-right-width: 1px!important;\n  outline: 0;\n  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);\n}\n";
-var style$3 = {"input":"style_input__Ohlyv"};
-styleInject(css_248z$4);
+var css_248z$6 = ".style_input__Ohlyv {\n  display: inline-block;\n  color: rgba(0, 0, 0, 0.85);\n  font-size: 14px;\n  padding: 1px 8px;\n  line-height: 1.33;\n  border: 1px solid #d9d9d9;\n  border-radius: 2px;\n  transition: all 0.3s;\n}\n.style_input__Ohlyv:focus {\n  border-color: #40a9ff;\n  border-right-width: 1px!important;\n  outline: 0;\n  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);\n}\n";
+var style$5 = {"input":"style_input__Ohlyv"};
+styleInject(css_248z$6);
 
 const Input = (props, ref) => {
     const { className, placeholder, onChange = () => { }, onBlur = () => { }, onFocus } = props;
-    return React.createElement("input", { ref: ref, className: classnames(className, style$3.input), onChange: onChange, onBlur: onBlur, onFocus: onFocus, placeholder: placeholder });
+    return React.createElement("input", { ref: ref, className: classnames(className, style$5.input), onChange: onChange, onBlur: onBlur, onFocus: onFocus, placeholder: placeholder });
 };
 var Input$1 = React.forwardRef(Input);
 
@@ -762,26 +849,42 @@ const toolbar = [
         ],
         render: renderSelect
     },
-    {
-        action: 'addEntity',
-        type: 'popover',
-        initValue: JSON.stringify({ textAlign: 'left' }),
-        areas: [
-            { lable: '插入图片', icon: React.createElement(Icon, { fontIcon: "\uE64A" }), value: 'image' },
-            { lable: '插入表格', icon: React.createElement(Icon, { fontIcon: "\uE6CC" }), value: '' },
-            { lable: '插入公示', icon: React.createElement(Icon, { fontIcon: "\uE600" }), value: '' },
-        ],
-        render: (toolBarState, toolbarItem, key) => {
-            const { event, stack, inlineStyles } = toolBarState;
-            const { action, areas } = toolbarItem;
-            return areas.map(({ icon, lable, }, idx) => React.createElement(Popover, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
-                React.createElement(Input$1, { onBlur: (e) => {
-                        const inputText = e.target.value;
-                        e.target.value = '';
-                        event.fire(`${action}`, inputText);
-                    } })));
+    [
+        {
+            action: 'addEntity',
+            type: 'popover',
+            initValue: JSON.stringify({ textAlign: 'left' }),
+            areas: [
+                { lable: '插入表格', icon: React.createElement(Icon, { fontIcon: "\uE6CC" }), value: '' },
+            ],
+            render: rentable
+        }, {
+            action: 'addEntity',
+            type: 'popover',
+            initValue: JSON.stringify({ textAlign: 'left' }),
+            areas: [
+                { lable: '插入图片', icon: React.createElement(Icon, { fontIcon: "\uE64A" }), value: 'image' },
+            ],
+            render: (toolBarState, toolbarItem, key) => {
+                const { event, stack, inlineStyles } = toolBarState;
+                const { action, areas } = toolbarItem;
+                return areas.map(({ icon, lable, }, idx) => React.createElement(Popover$1, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
+                    React.createElement(Input$1, { onBlur: (e) => {
+                            const inputText = e.target.value;
+                            e.target.value = '';
+                            event.fire(`${action}`, inputText);
+                        } })));
+            }
+        }, {
+            action: 'addEntity',
+            type: 'popover',
+            initValue: JSON.stringify({ textAlign: 'left' }),
+            areas: [
+                { lable: '插入公示', icon: React.createElement(Icon, { fontIcon: "\uE600" }), value: '' },
+            ],
+            render: () => { }
         }
-    }
+    ],
 ];
 const customStyleMap = {
     '12px': { fontSize: '12px' },
@@ -804,9 +907,9 @@ colors.forEach(({ value }) => {
     });
 });
 
-var css_248z$5 = ".style_page__2FnF3 {\n  display: flex;\n  height: 100%;\n  overflow: hidden;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  background-color: #f9f9f9;\n}\n.style_page__2FnF3 .style_main__3Jxot {\n  width: 100%;\n  overflow-y: auto;\n  padding-bottom: 64px;\n}\n.style_page__2FnF3 .style_main__3Jxot .style_editor__1Eryk {\n  border: 1px solid #e8e8e8;\n  border-radius: 3px;\n  box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);\n  width: 872px;\n  min-height: 1455px;\n  margin: 16px auto 0 auto;\n  padding: 20px 60px 90px 60px;\n  background-color: white;\n}\n";
-var style$4 = {"page":"style_page__2FnF3","main":"style_main__3Jxot","editor":"style_editor__1Eryk"};
-styleInject(css_248z$5);
+var css_248z$7 = ".style_page__2FnF3 {\n  display: flex;\n  height: 100%;\n  overflow: hidden;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  background-color: #f9f9f9;\n}\n.style_page__2FnF3 .style_main__3Jxot {\n  width: 100%;\n  overflow-y: auto;\n  padding-bottom: 64px;\n}\n.style_page__2FnF3 .style_main__3Jxot .style_editor__1Eryk {\n  border: 1px solid #e8e8e8;\n  border-radius: 3px;\n  box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);\n  width: 872px;\n  min-height: 1455px;\n  margin: 16px auto 0 auto;\n  padding: 20px 60px 90px 60px;\n  background-color: white;\n}\n";
+var style$6 = {"page":"style_page__2FnF3","main":"style_main__3Jxot","editor":"style_editor__1Eryk"};
+styleInject(css_248z$7);
 
 const DoubleAEditor = (props, editorRef) => {
     if (typeof editorRef === 'function') {
@@ -928,7 +1031,7 @@ const DoubleAEditor = (props, editorRef) => {
         }
         setEditorState(state);
     };
-    return (React.createElement("div", { className: classnames({ formatBrush: formatBrush }, style$4.editor), onClick: (e) => {
+    return (React.createElement("div", { className: classnames({ formatBrush: formatBrush }, style$6.editor), onClick: (e) => {
             const contentEditable = document.activeElement.contentEditable;
             if (contentEditable !== 'true') {
                 setTimeout(() => {
@@ -940,9 +1043,9 @@ const DoubleAEditor = (props, editorRef) => {
 };
 var MyEditor = React.forwardRef(DoubleAEditor);
 
-var css_248z$6 = ".style_editorToolbar__3gucq {\n  width: 100%;\n  height: 42px;\n  border: 1px solid #e8e8e8;\n  display: flex;\n  justify-content: center;\n  background-color: white;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);\n  position: sticky;\n  top: 0;\n}\n.style_editorToolbar__3gucq button {\n  background-color: white;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog {\n  height: 100%;\n  padding: 3px 0;\n  display: inline-block;\n  border-right: 1px solid #e8e8e8;\n  box-sizing: border-box;\n  vertical-align: middle;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog:nth-child(1) {\n  border-left: 1px solid #e8e8e8;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > * {\n  box-sizing: border-box;\n  display: inline-block;\n  height: 100%;\n  font-size: 16px;\n  margin: 0 5px;\n  padding: 5px 11px;\n  border: none;\n  border-radius: 5px;\n  outline: none;\n  cursor: pointer;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *:hover {\n  background-color: #f5f5f5;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[active='true'] {\n  color: #3cb034;\n  font-weight: bold;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[disabled] {\n  background-color: transparent;\n  opacity: 0.4;\n  text-shadow: none;\n  box-shadow: none;\n  cursor: not-allowed;\n}\n";
-var style$5 = {"editorToolbar":"style_editorToolbar__3gucq","barArea":"style_barArea__1hKog"};
-styleInject(css_248z$6);
+var css_248z$8 = ".style_editorToolbar__3gucq {\n  width: 100%;\n  height: 42px;\n  border: 1px solid #e8e8e8;\n  display: flex;\n  justify-content: center;\n  background-color: white;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);\n  position: sticky;\n  top: 0;\n}\n.style_editorToolbar__3gucq button {\n  background-color: white;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog {\n  height: 100%;\n  padding: 3px 0;\n  display: inline-block;\n  border-right: 1px solid #e8e8e8;\n  box-sizing: border-box;\n  vertical-align: middle;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog:nth-child(1) {\n  border-left: 1px solid #e8e8e8;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > * {\n  box-sizing: border-box;\n  display: inline-block;\n  height: 100%;\n  font-size: 16px;\n  margin: 0 5px;\n  padding: 5px 11px;\n  border: none;\n  border-radius: 5px;\n  outline: none;\n  cursor: pointer;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *:hover {\n  background-color: #f5f5f5;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[active='true'] {\n  color: #3cb034;\n  font-weight: bold;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[disabled] {\n  background-color: transparent;\n  opacity: 0.4;\n  text-shadow: none;\n  box-shadow: none;\n  cursor: not-allowed;\n}\n";
+var style$7 = {"editorToolbar":"style_editorToolbar__3gucq","barArea":"style_barArea__1hKog"};
+styleInject(css_248z$8);
 
 const ToolBar = (props) => {
     const { event, editorState, stack } = props;
@@ -961,34 +1064,39 @@ const ToolBar = (props) => {
         .toJS();
     const renderToolBar = (tools) => {
         return tools.map((toolbarItem, idx) => {
+            const toolBarState = {
+                event,
+                stack,
+                inlineStyles,
+                blockType,
+                blockData
+            };
             if (Array.isArray(toolbarItem)) {
-                return renderToolBar(toolbarItem);
+                return (React.createElement("div", { className: style$7.barArea, key: idx }, toolbarItem.map((barItem, i) => {
+                    const { render } = barItem;
+                    return typeof render === 'function'
+                        ? render(toolBarState, barItem, `${idx}-${i}`, false)
+                        : null;
+                })));
             }
             else {
                 const { render } = toolbarItem;
-                const toolBarState = {
-                    event,
-                    stack,
-                    inlineStyles,
-                    blockType,
-                    blockData
-                };
-                return (React.createElement("div", { className: style$5.barArea, key: idx }, typeof render === 'function'
+                return (React.createElement("div", { className: style$7.barArea, key: idx }, typeof render === 'function'
                     ? render(toolBarState, toolbarItem, idx, false)
                     : null));
             }
         });
     };
-    return (React.createElement("div", { className: style$5.editorToolbar }, renderToolBar(toolbar)));
+    return (React.createElement("div", { className: style$7.editorToolbar }, renderToolBar(toolbar)));
 };
 
-var css_248z$7 = ".style_panel__FdLdF {\n  width: 400px;\n  height: 240px;\n  border: 1px solid #ccc;\n  position: relative;\n}\n.style_panel__FdLdF .style_resizableR__2UVnq {\n  position: absolute;\n  right: 0;\n  top: 0;\n  width: 10px;\n  height: 100%;\n  background-color: aqua;\n  cursor: e-resize;\n}\n.style_panel__FdLdF .style_resizableB__1XAPb {\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 10px;\n  background-color: hotpink;\n  cursor: s-resize;\n}\n.style_panel__FdLdF .style_resizableRB__10iO- {\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  width: 20px;\n  height: 20px;\n  background-color: mediumpurple;\n  cursor: se-resize;\n}\n";
-var style$6 = {"panel":"style_panel__FdLdF","resizableR":"style_resizableR__2UVnq","resizableB":"style_resizableB__1XAPb","resizableRB":"style_resizableRB__10iO-"};
-styleInject(css_248z$7);
+var css_248z$9 = ".style_panel__FdLdF {\n  width: 400px;\n  height: 240px;\n  border: 1px solid #ccc;\n  position: relative;\n}\n.style_panel__FdLdF .style_resizableR__2UVnq {\n  position: absolute;\n  right: 0;\n  top: 0;\n  width: 10px;\n  height: 100%;\n  background-color: aqua;\n  cursor: e-resize;\n}\n.style_panel__FdLdF .style_resizableB__1XAPb {\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 10px;\n  background-color: hotpink;\n  cursor: s-resize;\n}\n.style_panel__FdLdF .style_resizableRB__10iO- {\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  width: 20px;\n  height: 20px;\n  background-color: mediumpurple;\n  cursor: se-resize;\n}\n";
+var style$8 = {"panel":"style_panel__FdLdF","resizableR":"style_resizableR__2UVnq","resizableB":"style_resizableB__1XAPb","resizableRB":"style_resizableRB__10iO-"};
+styleInject(css_248z$9);
 
-const rName = style$6.resizableR;
-const bName = style$6.resizableB;
-const rbName = style$6.resizableRB;
+const rName = style$8.resizableR;
+const bName = style$8.resizableB;
+const rbName = style$8.resizableRB;
 class Resizable {
     constructor(panelDom) {
         this.m_start_x = 0;
@@ -1108,7 +1216,7 @@ const Image = (props) => {
     const inlineStyle = {};
     width && (inlineStyle.width = width);
     height && (inlineStyle.height = height);
-    return React.createElement("div", { ref: ref, className: classnames(style$6.panel), style: inlineStyle },
+    return React.createElement("div", { ref: ref, className: classnames(style$8.panel), style: inlineStyle },
         React.createElement("img", { style: { width: '100%' }, src: src }));
 };
 
@@ -1311,8 +1419,8 @@ var focusPlugin = (props) => {
     };
 };
 
-var css_248z$8 = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
-styleInject(css_248z$8);
+var css_248z$a = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
+styleInject(css_248z$a);
 
 const Index = () => {
     const state = EditorState.createEmpty();
@@ -1333,9 +1441,9 @@ const Index = () => {
         editorState,
         setEditorState
     };
-    return (React.createElement("div", { className: style$4.page },
+    return (React.createElement("div", { className: style$6.page },
         React.createElement(ToolBar, Object.assign({}, toolBarProps)),
-        React.createElement("div", { className: style$4.main },
+        React.createElement("div", { className: style$6.main },
             React.createElement(MyEditor, Object.assign({ ref: editorRef }, editorProps)))));
 };
 

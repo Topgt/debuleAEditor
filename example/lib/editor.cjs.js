@@ -9621,7 +9621,7 @@ var _objectAssign_4_1_1_objectAssign = shouldUseNative() ? Object.assign : funct
 
 var uaParser = createCommonjsModule(function (module, exports) {
 /*!
- * UAParser.js v0.7.21
+ * UAParser.js v0.7.23
  * Lightweight JavaScript-based User-Agent string parser
  * https://github.com/faisalman/ua-parser-js
  *
@@ -9632,7 +9632,7 @@ var uaParser = createCommonjsModule(function (module, exports) {
   // Constants
   /////////////
 
-  var LIBVERSION = '0.7.21',
+  var LIBVERSION = '0.7.23',
       EMPTY = '',
       UNKNOWN = '?',
       FUNC_TYPE = 'function',
@@ -9820,7 +9820,7 @@ var uaParser = createCommonjsModule(function (module, exports) {
   var regexes = {
     browser: [[// Presto based
     /(opera\smini)\/([\w\.-]+)/i, // Opera Mini
-    /(opera\s[mobiletab]+).+version\/([\w\.-]+)/i, // Opera Mobi/Tablet
+    /(opera\s[mobiletab]{3,6}).+version\/([\w\.-]+)/i, // Opera Mobi/Tablet
     /(opera).+version\/([\w\.]+)/i, // Opera > 9.80
     /(opera)[\/\s]+([\w\.]+)/i // Opera < 9.80
     ], [NAME, VERSION], [/(opios)[\/\s]+([\w\.]+)/i // Opera mini on iphone >= 8.0
@@ -9836,7 +9836,7 @@ var uaParser = createCommonjsModule(function (module, exports) {
     /(rekonq)\/([\w\.]*)/i, // Rekonq
     /(chromium|flock|rockmelt|midori|epiphany|silk|skyfire|ovibrowser|bolt|iron|vivaldi|iridium|phantomjs|bowser|quark|qupzilla|falkon)\/([\w\.-]+)/i // Chromium/Flock/RockMelt/Midori/Epiphany/Silk/Skyfire/Bolt/Iron/Iridium/PhantomJS/Bowser/QupZilla/Falkon
     ], [NAME, VERSION], [/(konqueror)\/([\w\.]+)/i // Konqueror
-    ], [[NAME, 'Konqueror'], VERSION], [/(trident).+rv[:\s]([\w\.]+).+like\sgecko/i // IE11
+    ], [[NAME, 'Konqueror'], VERSION], [/(trident).+rv[:\s]([\w\.]{1,9}).+like\sgecko/i // IE11
     ], [[NAME, 'IE'], VERSION], [/(edge|edgios|edga|edg)\/((\d+)?[\w\.]+)/i // Microsoft Edge
     ], [[NAME, 'Edge'], VERSION], [/(yabrowser)\/([\w\.]+)/i // Yandex
     ], [[NAME, 'Yandex'], VERSION], [/(Avast)\/([\w\.]+)/i // Avast Secure Browser
@@ -9849,7 +9849,8 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [[NAME, /_/g, ' '], VERSION], [/(windowswechat qbcore)\/([\w\.]+)/i // WeChat Desktop for Windows Built-in Browser
     ], [[NAME, 'WeChat(Win) Desktop'], VERSION], [/(micromessenger)\/([\w\.]+)/i // WeChat
     ], [[NAME, 'WeChat'], VERSION], [/(brave)\/([\w\.]+)/i // Brave browser
-    ], [[NAME, 'Brave'], VERSION], [/(qqbrowserlite)\/([\w\.]+)/i // QQBrowserLite
+    ], [[NAME, 'Brave'], VERSION], [/(whale)\/([\w\.]+)/i // Whale browser
+    ], [[NAME, 'Whale'], VERSION], [/(qqbrowserlite)\/([\w\.]+)/i // QQBrowserLite
     ], [NAME, VERSION], [/(QQ)\/([\d\.]+)/i // QQ, aka ShouQ
     ], [NAME, VERSION], [/m?(qqbrowser)[\/\s]?([\w\.]+)/i // QQBrowser
     ], [NAME, VERSION], [/(baiduboxapp)[\/\s]?([\w\.]+)/i // Baidu App
@@ -9857,8 +9858,9 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [NAME, VERSION], [/(MetaSr)[\/\s]?([\w\.]+)/i // SouGouBrowser
     ], [NAME], [/(LBBROWSER)/i // LieBao Browser
     ], [NAME], [/xiaomi\/miuibrowser\/([\w\.]+)/i // MIUI Browser
-    ], [VERSION, [NAME, 'MIUI Browser']], [/;fbav\/([\w\.]+);/i // Facebook App for iOS & Android
-    ], [VERSION, [NAME, 'Facebook']], [/safari\s(line)\/([\w\.]+)/i, // Line App for iOS
+    ], [VERSION, [NAME, 'MIUI Browser']], [/;fbav\/([\w\.]+);/i // Facebook App for iOS & Android with version
+    ], [VERSION, [NAME, 'Facebook']], [/FBAN\/FBIOS|FB_IAB\/FB4A/i // Facebook App for iOS & Android without version
+    ], [[NAME, 'Facebook']], [/safari\s(line)\/([\w\.]+)/i, // Line App for iOS
     /android.+(line)\/([\w\.]+)\/iab/i // Line App for Android
     ], [NAME, VERSION], [/headlesschrome(?:\/([\w\.]+)|\s)/i // Chrome Headless
     ], [VERSION, [NAME, 'Chrome Headless']], [/\swv\).+(chrome)\/([\w\.]+)/i // Chrome WebView
@@ -9871,16 +9873,17 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [[NAME, '360 Browser']], [/((?:android.+)crmo|crios)\/([\w\.]+)/i // Chrome for Android/iOS
     ], [[NAME, 'Chrome'], VERSION], [/(coast)\/([\w\.]+)/i // Opera Coast
     ], [[NAME, 'Opera Coast'], VERSION], [/fxios\/([\w\.-]+)/i // Firefox for iOS
-    ], [VERSION, [NAME, 'Firefox']], [/version\/([\w\.]+).+?mobile\/\w+\s(safari)/i // Mobile Safari
-    ], [VERSION, [NAME, 'Mobile Safari']], [/version\/([\w\.]+).+?(mobile\s?safari|safari)/i // Safari & Safari Mobile
-    ], [VERSION, NAME], [/webkit.+?(gsa)\/([\w\.]+).+?(mobile\s?safari|safari)(\/[\w\.]+)/i // Google Search Appliance on iOS
+    ], [VERSION, [NAME, 'Firefox']], [/version\/([\w\.]+)\s.*mobile\/\w+\s(safari)/i // Mobile Safari
+    ], [VERSION, [NAME, 'Mobile Safari']], [/version\/([\w\.]+)\s.*(mobile\s?safari|safari)/i // Safari & Safari Mobile
+    ], [VERSION, NAME], [/webkit.+?(gsa)\/([\w\.]+)\s.*(mobile\s?safari|safari)(\/[\w\.]+)/i // Google Search Appliance on iOS
     ], [[NAME, 'GSA'], VERSION], [/webkit.+?(mobile\s?safari|safari)(\/[\w\.]+)/i // Safari < 3.0
     ], [NAME, [VERSION, mapper.str, maps.browser.oldsafari.version]], [/(webkit|khtml)\/([\w\.]+)/i], [NAME, VERSION], [// Gecko based
     /(navigator|netscape)\/([\w\.-]+)/i // Netscape
     ], [[NAME, 'Netscape'], VERSION], [/(swiftfox)/i, // Swiftfox
     /(icedragon|iceweasel|camino|chimera|fennec|maemo\sbrowser|minimo|conkeror)[\/\s]?([\w\.\+]+)/i, // IceDragon/Iceweasel/Camino/Chimera/Fennec/Maemo/Minimo/Conkeror
     /(firefox|seamonkey|k-meleon|icecat|iceape|firebird|phoenix|palemoon|basilisk|waterfox)\/([\w\.-]+)$/i, // Firefox/SeaMonkey/K-Meleon/IceCat/IceApe/Firebird/Phoenix
-    /(mozilla)\/([\w\.]+).+rv\:.+gecko\/\d+/i, // Mozilla
+    /(firefox)\/([\w\.]+)\s[\w\s\-]+\/[\w\.]+$/i, // Other Firefox-based
+    /(mozilla)\/([\w\.]+)\s.+rv\:.+gecko\/\d+/i, // Mozilla
     // Other
     /(polaris|lynx|dillo|icab|doris|amaya|w3m|netsurf|sleipnir)[\/\s]?([\w\.]+)/i, // Polaris/Lynx/Dillo/iCab/Doris/Amaya/w3m/NetSurf/Sleipnir
     /(links)\s\(([\w\.]+)/i, // Links
@@ -9905,8 +9908,8 @@ var uaParser = createCommonjsModule(function (module, exports) {
     /(kindle)\/([\w\.]+)/i, // Kindle
     /\s(nook)[\w\s]+build\/(\w+)/i, // Nook
     /(dell)\s(strea[kpr\s\d]*[\dko])/i // Dell Streak
-    ], [VENDOR, MODEL, [TYPE, TABLET]], [/(kf[A-z]+)\sbuild\/.+silk\//i // Kindle Fire HD
-    ], [MODEL, [VENDOR, 'Amazon'], [TYPE, TABLET]], [/(sd|kf)[0349hijorstuw]+\sbuild\/.+silk\//i // Fire Phone
+    ], [VENDOR, MODEL, [TYPE, TABLET]], [/(kf[A-z]+)(\sbuild\/|\)).+silk\//i // Kindle Fire HD
+    ], [MODEL, [VENDOR, 'Amazon'], [TYPE, TABLET]], [/(sd|kf)[0349hijorstuw]+(\sbuild\/|\)).+silk\//i // Fire Phone
     ], [[MODEL, mapper.str, maps.device.amazon.model], [VENDOR, 'Amazon'], [TYPE, MOBILE]], [/android.+aft([bms])\sbuild/i // Fire TV
     ], [MODEL, [VENDOR, 'Amazon'], [TYPE, SMARTTV]], [/\((ip[honed|\s\w*]+);.+(apple)/i // iPod/iPhone
     ], [MODEL, VENDOR, [TYPE, MOBILE]], [/\((ip[honed|\s\w*]+);/i // iPod/iPhone
@@ -9922,26 +9925,26 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [VENDOR, MODEL, [TYPE, CONSOLE]], [/android.+;\s(shield)\sbuild/i // Nvidia
     ], [MODEL, [VENDOR, 'Nvidia'], [TYPE, CONSOLE]], [/(playstation\s[34portablevi]+)/i // Playstation
     ], [MODEL, [VENDOR, 'Sony'], [TYPE, CONSOLE]], [/(sprint\s(\w+))/i // Sprint Phones
-    ], [[VENDOR, mapper.str, maps.device.sprint.vendor], [MODEL, mapper.str, maps.device.sprint.model], [TYPE, MOBILE]], [/(htc)[;_\s-]+([\w\s]+(?=\)|\sbuild)|\w+)/i, // HTC
+    ], [[VENDOR, mapper.str, maps.device.sprint.vendor], [MODEL, mapper.str, maps.device.sprint.model], [TYPE, MOBILE]], [/(htc)[;_\s-]{1,2}([\w\s]+(?=\)|\sbuild)|\w+)/i, // HTC
     /(zte)-(\w*)/i, // ZTE
     /(alcatel|geeksphone|nexian|panasonic|(?=;\s)sony)[_\s-]?([\w-]*)/i // Alcatel/GeeksPhone/Nexian/Panasonic/Sony
     ], [VENDOR, [MODEL, /_/g, ' '], [TYPE, MOBILE]], [/(nexus\s9)/i // HTC Nexus 9
-    ], [MODEL, [VENDOR, 'HTC'], [TYPE, TABLET]], [/d\/huawei([\w\s-]+)[;\)]/i, /(nexus\s6p|vog-l29|ane-lx1|eml-l29)/i // Huawei
-    ], [MODEL, [VENDOR, 'Huawei'], [TYPE, MOBILE]], [/android.+(bah2?-a?[lw]\d{2})/i // Huawei MediaPad
+    ], [MODEL, [VENDOR, 'HTC'], [TYPE, TABLET]], [/d\/huawei([\w\s-]+)[;\)]/i, // Huawei
+    /android.+\s(nexus\s6p|vog-[at]?l\d\d|ane-[at]?l[x\d]\d|eml-a?l\d\da?|lya-[at]?l\d[\dc]|clt-a?l\d\di?)/i], [MODEL, [VENDOR, 'Huawei'], [TYPE, MOBILE]], [/android.+(bah2?-a?[lw]\d{2})/i // Huawei MediaPad
     ], [MODEL, [VENDOR, 'Huawei'], [TYPE, TABLET]], [/(microsoft);\s(lumia[\s\w]+)/i // Microsoft Lumia
     ], [VENDOR, MODEL, [TYPE, MOBILE]], [/[\s\(;](xbox(?:\sone)?)[\s\);]/i // Microsoft Xbox
     ], [MODEL, [VENDOR, 'Microsoft'], [TYPE, CONSOLE]], [/(kin\.[onetw]{3})/i // Microsoft Kin
     ], [[MODEL, /\./g, ' '], [VENDOR, 'Microsoft'], [TYPE, MOBILE]], [// Motorola
     /\s(milestone|droid(?:[2-4x]|\s(?:bionic|x2|pro|razr))?:?(\s4g)?)[\w\s]+build\//i, /mot[\s-]?(\w*)/i, /(XT\d{3,4}) build\//i, /(nexus\s6)/i], [MODEL, [VENDOR, 'Motorola'], [TYPE, MOBILE]], [/android.+\s(mz60\d|xoom[\s2]{0,2})\sbuild\//i], [MODEL, [VENDOR, 'Motorola'], [TYPE, TABLET]], [/hbbtv\/\d+\.\d+\.\d+\s+\([\w\s]*;\s*(\w[^;]*);([^;]*)/i // HbbTV devices
     ], [[VENDOR, util.trim], [MODEL, util.trim], [TYPE, SMARTTV]], [/hbbtv.+maple;(\d+)/i], [[MODEL, /^/, 'SmartTV'], [VENDOR, 'Samsung'], [TYPE, SMARTTV]], [/\(dtv[\);].+(aquos)/i // Sharp
-    ], [MODEL, [VENDOR, 'Sharp'], [TYPE, SMARTTV]], [/android.+((sch-i[89]0\d|shw-m380s|gt-p\d{4}|gt-n\d+|sgh-t8[56]9|nexus 10))/i, /((SM-T\w+))/i], [[VENDOR, 'Samsung'], MODEL, [TYPE, TABLET]], [// Samsung
+    ], [MODEL, [VENDOR, 'Sharp'], [TYPE, SMARTTV]], [/android.+((sch-i[89]0\d|shw-m380s|SM-P605|SM-P610|gt-p\d{4}|gt-n\d+|sgh-t8[56]9|nexus 10))/i, /((SM-T\w+))/i], [[VENDOR, 'Samsung'], MODEL, [TYPE, TABLET]], [// Samsung
     /smart-tv.+(samsung)/i], [VENDOR, [TYPE, SMARTTV], MODEL], [/((s[cgp]h-\w+|gt-\w+|galaxy\snexus|sm-\w[\w\d]+))/i, /(sam[sung]*)[\s-]*(\w+-?[\w-]*)/i, /sec-((sgh\w+))/i], [[VENDOR, 'Samsung'], MODEL, [TYPE, MOBILE]], [/sie-(\w*)/i // Siemens
     ], [MODEL, [VENDOR, 'Siemens'], [TYPE, MOBILE]], [/(maemo|nokia).*(n900|lumia\s\d+)/i, // Nokia
     /(nokia)[\s_-]?([\w-]*)/i], [[VENDOR, 'Nokia'], MODEL, [TYPE, MOBILE]], [/android[x\d\.\s;]+\s([ab][1-7]\-?[0178a]\d\d?)/i // Acer
     ], [MODEL, [VENDOR, 'Acer'], [TYPE, TABLET]], [/android.+([vl]k\-?\d{3})\s+build/i // LG Tablet
     ], [MODEL, [VENDOR, 'LG'], [TYPE, TABLET]], [/android\s3\.[\s\w;-]{10}(lg?)-([06cv9]{3,4})/i // LG Tablet
-    ], [[VENDOR, 'LG'], MODEL, [TYPE, TABLET]], [/(lg) netcast\.tv/i // LG SmartTV
-    ], [VENDOR, MODEL, [TYPE, SMARTTV]], [/(nexus\s[45])/i, // LG
+    ], [[VENDOR, 'LG'], MODEL, [TYPE, TABLET]], [/linux;\snetcast.+smarttv/i, // LG SmartTV
+    /lg\snetcast\.tv-201\d/i], [[VENDOR, 'LG'], MODEL, [TYPE, SMARTTV]], [/(nexus\s[45])/i, // LG
     /lg[e;\s\/-]+(\w*)/i, /android.+lg(\-?[\d\w]+)\s+build/i], [MODEL, [VENDOR, 'LG'], [TYPE, MOBILE]], [/(lenovo)\s?(s(?:5000|6000)(?:[\w-]+)|tab(?:[\s\w]+))/i // Lenovo tablets
     ], [VENDOR, MODEL, [TYPE, TABLET]], [/android.+(ideatab[a-z0-9\-\s]+)/i // Lenovo
     ], [MODEL, [VENDOR, 'Lenovo'], [TYPE, TABLET]], [/(lenovo)[_\s-]?([\w-]+)/i], [VENDOR, MODEL, [TYPE, MOBILE]], [/linux;.+((jolla));/i // Jolla
@@ -9950,16 +9953,16 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [VENDOR, MODEL, [TYPE, MOBILE]], [/crkey/i // Google Chromecast
     ], [[MODEL, 'Chromecast'], [VENDOR, 'Google'], [TYPE, SMARTTV]], [/android.+;\s(glass)\s\d/i // Google Glass
     ], [MODEL, [VENDOR, 'Google'], [TYPE, WEARABLE]], [/android.+;\s(pixel c)[\s)]/i // Google Pixel C
-    ], [MODEL, [VENDOR, 'Google'], [TYPE, TABLET]], [/android.+;\s(pixel( [23])?( xl)?)[\s)]/i // Google Pixel
+    ], [MODEL, [VENDOR, 'Google'], [TYPE, TABLET]], [/android.+;\s(pixel( [2-9]a?)?( xl)?)[\s)]/i // Google Pixel
     ], [MODEL, [VENDOR, 'Google'], [TYPE, MOBILE]], [/android.+;\s(\w+)\s+build\/hm\1/i, // Xiaomi Hongmi 'numeric' models
-    /android.+(hm[\s\-_]*note?[\s_]*(?:\d\w)?)\s+build/i, // Xiaomi Hongmi
-    /android.+(mi[\s\-_]*(?:a\d|one|one[\s_]plus|note lte)?[\s_]*(?:\d?\w?)[\s_]*(?:plus)?)\s+build/i, // Xiaomi Mi
-    /android.+(redmi[\s\-_]*(?:note)?(?:[\s_]*[\w\s]+))\s+build/i // Redmi Phones
-    ], [[MODEL, /_/g, ' '], [VENDOR, 'Xiaomi'], [TYPE, MOBILE]], [/android.+(mi[\s\-_]*(?:pad)(?:[\s_]*[\w\s]+))\s+build/i // Mi Pad tablets
+    /android.+(hm[\s\-_]?note?[\s_]?(?:\d\w)?)\sbuild/i, // Xiaomi Hongmi
+    /android.+(redmi[\s\-_]?(?:note|k)?(?:[\s_]?[\w\s]+))(?:\sbuild|\))/i, // Xiaomi Redmi
+    /android.+(mi[\s\-_]?(?:a\d|one|one[\s_]plus|note lte)?[\s_]?(?:\d?\w?)[\s_]?(?:plus)?)\sbuild/i // Xiaomi Mi
+    ], [[MODEL, /_/g, ' '], [VENDOR, 'Xiaomi'], [TYPE, MOBILE]], [/android.+(mi[\s\-_]?(?:pad)(?:[\s_]?[\w\s]+))(?:\sbuild|\))/i // Mi Pad tablets
     ], [[MODEL, /_/g, ' '], [VENDOR, 'Xiaomi'], [TYPE, TABLET]], [/android.+;\s(m[1-5]\snote)\sbuild/i // Meizu
     ], [MODEL, [VENDOR, 'Meizu'], [TYPE, MOBILE]], [/(mz)-([\w-]{2,})/i], [[VENDOR, 'Meizu'], MODEL, [TYPE, MOBILE]], [/android.+a000(1)\s+build/i, // OnePlus
     /android.+oneplus\s(a\d{4})[\s)]/i], [MODEL, [VENDOR, 'OnePlus'], [TYPE, MOBILE]], [/android.+[;\/]\s*(RCT[\d\w]+)\s+build/i // RCA Tablets
-    ], [MODEL, [VENDOR, 'RCA'], [TYPE, TABLET]], [/android.+[;\/\s]+(Venue[\d\s]{2,7})\s+build/i // Dell Venue Tablets
+    ], [MODEL, [VENDOR, 'RCA'], [TYPE, TABLET]], [/android.+[;\/\s](Venue[\d\s]{2,7})\s+build/i // Dell Venue Tablets
     ], [MODEL, [VENDOR, 'Dell'], [TYPE, TABLET]], [/android.+[;\/]\s*(Q[T|M][\d\w]+)\s+build/i // Verizon Tablet
     ], [MODEL, [VENDOR, 'Verizon'], [TYPE, TABLET]], [/android.+[;\/]\s+(Barnes[&\s]+Noble\s+|BN[RT])(V?.*)\s+build/i // Barnes & Noble Tablet
     ], [[VENDOR, 'Barnes & Noble'], MODEL, [TYPE, TABLET]], [/android.+[;\/]\s+(TM\d{3}.*\b)\s+build/i // Barnes & Noble Tablet
@@ -9975,12 +9978,15 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [[VENDOR, 'LvTel'], MODEL, [TYPE, MOBILE]], [/android.+;\s(PH-1)\s/i], [MODEL, [VENDOR, 'Essential'], [TYPE, MOBILE]], [// Essential PH-1
     /android.+[;\/]\s*(V(100MD|700NA|7011|917G).*\b)\s+build/i // Envizen Tablets
     ], [MODEL, [VENDOR, 'Envizen'], [TYPE, TABLET]], [/android.+[;\/]\s*(Le[\s\-]+Pan)[\s\-]+(\w{1,9})\s+build/i // Le Pan Tablets
-    ], [VENDOR, MODEL, [TYPE, TABLET]], [/android.+[;\/]\s*(Trio[\s\-]*.*)\s+build/i // MachSpeed Tablets
+    ], [VENDOR, MODEL, [TYPE, TABLET]], [/android.+[;\/]\s*(Trio[\s\w\-\.]+)\s+build/i // MachSpeed Tablets
     ], [MODEL, [VENDOR, 'MachSpeed'], [TYPE, TABLET]], [/android.+[;\/]\s*(Trinity)[\-\s]*(T\d{3})\s+build/i // Trinity Tablets
     ], [VENDOR, MODEL, [TYPE, TABLET]], [/android.+[;\/]\s*TU_(1491)\s+build/i // Rotor Tablets
-    ], [MODEL, [VENDOR, 'Rotor'], [TYPE, TABLET]], [/android.+(KS(.+))\s+build/i // Amazon Kindle Tablets
-    ], [MODEL, [VENDOR, 'Amazon'], [TYPE, TABLET]], [/android.+(Gigaset)[\s\-]+(Q\w{1,9})\s+build/i // Gigaset Tablets
-    ], [VENDOR, MODEL, [TYPE, TABLET]], [/\s(tablet|tab)[;\/]/i, // Unidentifiable Tablet
+    ], [MODEL, [VENDOR, 'Rotor'], [TYPE, TABLET]], [//android.+(KS(.+))\s+build/i                                        // Amazon Kindle Tablets
+    //], [MODEL, [VENDOR, 'Amazon'], [TYPE, TABLET]], [
+    /android.+(Gigaset)[\s\-]+(Q\w{1,9})\s+build/i // Gigaset Tablets
+    ], [VENDOR, MODEL, [TYPE, TABLET]], [// Android Phones from Unidentified Vendors
+    /android .+?; ([^;]+?)(?: build|\) applewebkit).+? mobile safari/i], [MODEL, [TYPE, MOBILE]], [// Android Tablets from Unidentified Vendors
+    /android .+?;\s([^;]+?)(?: build|\) applewebkit).+?(?! mobile) safari/i], [MODEL, [TYPE, TABLET]], [/\s(tablet|tab)[;\/]/i, // Unidentifiable Tablet
     /\s(mobile)(?:[;\/]|\ssafari)/i // Unidentifiable Mobile
     ], [[TYPE, util.lowerize], VENDOR, MODEL], [/[\s\/\(](smart-?tv)[;\)]/i // SmartTV
     ], [[TYPE, SMARTTV]], [/(android[\w\.\s\-]{0,9});.+build/i // Generic Android Device
@@ -10005,7 +10011,9 @@ var uaParser = createCommonjsModule(function (module, exports) {
     ], [NAME, VERSION], [/(symbian\s?os|symbos|s60(?=;))[\/\s-]?([\w\.]*)/i // Symbian
     ], [[NAME, 'Symbian'], VERSION], [/\((series40);/i // Series 40
     ], [NAME], [/mozilla.+\(mobile;.+gecko.+firefox/i // Firefox OS
-    ], [[NAME, 'Firefox OS'], VERSION], [// Console
+    ], [[NAME, 'Firefox OS'], VERSION], [// Google Chromecast
+    /crkey\/([\d\.]+)/i // Google Chromecast
+    ], [VERSION, [NAME, 'Chromecast']], [// Console
     /(nintendo|playstation)\s([wids34portablevu]+)/i, // Nintendo/Playstation
     // GNU/Linux based
     /(mint)[\/\s\(]?(\w*)/i, // Mint
@@ -27085,7 +27093,7 @@ var lk = {
 })({
   findFiberByHostInstance: tc,
   bundleType: 0,
-  version: "16.13.1",
+  version: "16.14.0",
   rendererPackageName: "react-dom"
 });
 
@@ -27151,7 +27159,7 @@ var unstable_renderSubtreeIntoContainer = function (a, b, c, d) {
   return ik(a, b, c, !1, d);
 };
 
-var version = "16.13.1";
+var version = "16.14.0";
 
 var reactDom_production_min = {
 	__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,
@@ -31791,7 +31799,7 @@ container._reactRootContainer=null;unmarkContainerAsRoot(container);});});// If 
 return true;}else {{var _rootEl=getReactRootElementInContainer(container);var hasNonRootReactChild=!!(_rootEl&&getInstanceFromNode$1(_rootEl));// Check if the container itself is a React root node.
 var isContainerReactRoot=container.nodeType===ELEMENT_NODE&&isValidContainer(container.parentNode)&&!!container.parentNode._reactRootContainer;if(hasNonRootReactChild){error("unmountComponentAtNode(): The node you're attempting to unmount "+'was rendered by React and is not a top-level container. %s',isContainerReactRoot?'You may have accidentally passed in a React root node instead '+'of its container.':'Instead, have the parent component update its state and '+'rerender in order to remove this component.');}}return false;}}function createPortal(children,containerInfo,// TODO: figure out the API for cross-renderer implementation.
 implementation){var key=arguments.length>3&&arguments[3]!==undefined?arguments[3]:null;return {// This tag allow us to uniquely identify this as a React Portal
-$$typeof:REACT_PORTAL_TYPE,key:key==null?null:''+key,children:children,containerInfo:containerInfo,implementation:implementation};}var ReactVersion='16.13.1';setAttemptUserBlockingHydration(attemptUserBlockingHydration$1);setAttemptContinuousHydration(attemptContinuousHydration$1);setAttemptHydrationAtCurrentPriority(attemptHydrationAtCurrentPriority$1);var didWarnAboutUnstableCreatePortal=false;{if(typeof Map!=='function'||// $FlowIssue Flow incorrectly thinks Map has no prototype
+$$typeof:REACT_PORTAL_TYPE,key:key==null?null:''+key,children:children,containerInfo:containerInfo,implementation:implementation};}var ReactVersion='16.14.0';setAttemptUserBlockingHydration(attemptUserBlockingHydration$1);setAttemptContinuousHydration(attemptContinuousHydration$1);setAttemptHydrationAtCurrentPriority(attemptHydrationAtCurrentPriority$1);var didWarnAboutUnstableCreatePortal=false;{if(typeof Map!=='function'||// $FlowIssue Flow incorrectly thinks Map has no prototype
 Map.prototype==null||typeof Map.prototype.forEach!=='function'||typeof Set!=='function'||// $FlowIssue Flow incorrectly thinks Set has no prototype
 Set.prototype==null||typeof Set.prototype.clear!=='function'||typeof Set.prototype.forEach!=='function'){error('React depends on Map and Set built-in types. Make sure that you load a '+'polyfill in older browsers. https://fb.me/react-polyfills');}}setRestoreImplementation(restoreControlledState$3);setBatchingImplementation(batchedUpdates$1,discreteUpdates$1,flushDiscreteUpdates,batchedEventUpdates$1);function createPortal$1(children,container){var key=arguments.length>2&&arguments[2]!==undefined?arguments[2]:null;if(!isValidContainer(container)){{throw Error("Target container is not a DOM element.");}}// TODO: pass ReactDOM portal implementation as third argument
 // $FlowFixMe The Flow type is opaque but there's no way to actually create it.
@@ -31814,7 +31822,7 @@ var reactDom_development_9 = reactDom_development.unstable_createPortal;
 var reactDom_development_10 = reactDom_development.unstable_renderSubtreeIntoContainer;
 var reactDom_development_11 = reactDom_development.version;
 
-var _reactDom_16_13_1_reactDom = createCommonjsModule(function (module) {
+var _reactDom_16_14_0_reactDom = createCommonjsModule(function (module) {
 
 function checkDCE() {
   /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
@@ -31866,7 +31874,7 @@ if (process.env.NODE_ENV === 'production') {
 
 
 
-var flushControlled = _reactDom_16_13_1_reactDom.unstable_flushControlled;
+var flushControlled = _reactDom_16_14_0_reactDom.unstable_flushControlled;
 var DraftEditorFlushControlled = flushControlled;
 
 function _inheritsLoose$e(subClass, superClass) {
@@ -49373,6 +49381,93 @@ const Icon = (props) => {
     return React__default['default'].createElement("span", { className: style.iconfont, dangerouslySetInnerHTML: { __html: `${fontIcon}` } });
 };
 
+var css_248z$1 = ".style_popover__2AjgS {\n  position: relative;\n}\n.style_popover__2AjgS .style_btn__7PHp2 {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2AjgS .style_dropDown__3aZqZ {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
+var style$1 = {"popover":"style_popover__2AjgS","btn":"style_btn__7PHp2","dropDown":"style_dropDown__3aZqZ"};
+styleInject(css_248z$1);
+
+const Popover = (props) => {
+    const { className, lable, icon, children, disabled = false, tooltip } = props;
+    const popoverRef = React__default['default'].useRef(null);
+    const [visible, setVisible] = React__default['default'].useState(false);
+    React__default['default'].useEffect(() => {
+        const globalClick = (e) => {
+            let target = e.target;
+            while (target && target.nodeName !== 'BODY') {
+                if (target === popoverRef.current) {
+                    e.preventDefault();
+                    return;
+                }
+                target = target.parentElement;
+            }
+            if (!target || target.nodeName === 'BODY') {
+                e.preventDefault();
+                setVisible(false);
+                return;
+            }
+        };
+        if (document.querySelector('body')) {
+            document.querySelector('body').addEventListener('click', globalClick, false);
+        }
+        return () => {
+            if (document.querySelector('body')) {
+                document.querySelector('body').removeEventListener('click', globalClick);
+            }
+        };
+    }, []);
+    return (React__default['default'].createElement("div", { ref: (ref) => popoverRef.current = ref, className: _classnames_2_2_6_classnames(className, style$1.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
+            e.stopPropagation();
+            setVisible(disabled ? false : !visible);
+        } },
+        icon,
+        React__default['default'].createElement("div", { className: style$1.dropDown, style: {
+                display: `${visible ? "inline-flex" : "none"}`,
+            }, onMouseDown: (e) => {
+                e.stopPropagation();
+            } }, children)));
+};
+
+var css_248z$2 = ".style_tablepicker__3pqMO {\n  user-select: none;\n  visibility: visible;\n  width: 220px;\n}\n.style_tablepicker__3pqMO .style_body__3OwhL {\n  width: inherit;\n  height: inherit;\n}\n.style_tablepicker__3pqMO .style_body__3OwhL .style_pickarea__grRQf {\n  width: inherit;\n  height: 240px;\n}\n.style_tablepicker__3pqMO .style_body__3OwhL .style_infoarea__2LK-F {\n  padding-left: 8px;\n  height: 14px;\n  margin-bottom: 5px;\n  font-size: 12px;\n}\n";
+var style$2 = {"tablepicker":"style_tablepicker__3pqMO","body":"style_body__3OwhL","pickarea":"style_pickarea__grRQf","infoarea":"style_infoarea__2LK-F"};
+styleInject(css_248z$2);
+
+var src = 'data:image/gif;base64,R0lGODlhFgAWAKECAPj4+Onp6f///////yH5BAEKAAIALAAAAAAWABYAAAJAlI+pFu0P3wmg2otBm7nbzXgeKFDAiaYqaaouyr6yFnCzG99rHepp7jsBg0NfUXe8JWdLGSsChUyiVN7iis1mCwA7';
+
+var src$1 = 'data:image/gif;base64,R0lGODlhFgAWAKECAN3q+8PZ/////////yH5BAEKAAIALAAAAAAWABYAAAJAlI+pFu0P3wmg2otBm7nbzXgeKFDAiaYqaaouyr6yFnCzG99rHepp7jsBg0NfUXe8JWdLGSsChUyiVN7iis1mCwA7';
+
+var rentable = (toolBarState, toolbarItem, key) => {
+    const { action, areas } = toolbarItem;
+    const tableRef = React.useRef(null);
+    const [cols, setCols] = React__default['default'].useState(0);
+    const [rows, setRows] = React__default['default'].useState(0);
+    const mouseMove = (evt) => {
+        const sideLen = 22;
+        const el = evt.target || evt.srcElement;
+        const bcr = el.getBoundingClientRect();
+        const offset = {
+            left: evt.clientX - Math.round(bcr.left),
+            top: evt.clientY - Math.round(bcr.top)
+        };
+        const numCols = Math.ceil(offset.left / sideLen);
+        const numRows = Math.ceil(offset.top / sideLen);
+        if (cols !== numCols || rows !== numRows) {
+            setCols(numCols);
+            setRows(numRows);
+            let style = tableRef.current.querySelector('.overlay').style;
+            style.width = numCols * sideLen + "px";
+            style.height = numRows * sideLen + "px";
+            let labelDom = tableRef.current.querySelector('.edui-label') || {};
+            labelDom.innerHTML = `${numCols} 列 x ${numRows} 行`;
+        }
+    };
+    return areas.map(({ icon, lable, }, idx) => React__default['default'].createElement(Popover, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
+        React__default['default'].createElement("div", { className: style$2.tablepicker, ref: tableRef },
+            React__default['default'].createElement("div", { className: style$2.body },
+                React__default['default'].createElement("div", { className: style$2.infoarea },
+                    React__default['default'].createElement("span", { className: "edui-label" })),
+                React__default['default'].createElement("div", { className: style$2.pickarea, style: { backgroundImage: `url(${src})` }, onMouseMove: mouseMove },
+                    React__default['default'].createElement("div", { className: "overlay", style: { backgroundImage: `url(${src$1})` } }))))));
+};
+
 const renderBut = (toolBarState, toolbarItem, key) => {
     const { event, stack, inlineStyles } = toolBarState;
     const { action, areas } = toolbarItem;
@@ -49397,9 +49492,9 @@ const renderBut = (toolBarState, toolbarItem, key) => {
 
 const Context = React__default['default'].createContext({});
 
-var css_248z$1 = ".style_select__Os_gC {\n  position: relative;\n  display: inline-block;\n  outline: none;\n}\n.style_select__Os_gC .style_lake__8HnBa {\n  display: inline-block;\n  height: 100%;\n  padding-right: 20px;\n  white-space: nowrap;\n}\n.style_select__Os_gC .style_lake__8HnBa > i {\n  position: relative;\n}\n.style_select__Os_gC .style_lake__8HnBa > i:after {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 7px;\n  left: 10px;\n  border-width: 8px 5px 8px 5px;\n  border-style: solid;\n  border-color: #555 transparent transparent transparent;\n}\n.style_select__Os_gC .style_dropDown__ZSRCu {\n  position: absolute;\n  padding: 5px 0;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n.style_select__Os_gC .style_option__g9LRZ {\n  padding: 3px 8px;\n  white-space: nowrap;\n  cursor: pointer;\n}\n.style_select__Os_gC .style_option__g9LRZ:hover {\n  background-color: #f5f5f5;\n}\n";
+var css_248z$3 = ".style_select__Os_gC {\n  position: relative;\n  display: inline-block;\n  outline: none;\n}\n.style_select__Os_gC .style_lake__8HnBa {\n  display: inline-block;\n  height: 100%;\n  padding-right: 20px;\n  white-space: nowrap;\n}\n.style_select__Os_gC .style_lake__8HnBa > i {\n  position: relative;\n}\n.style_select__Os_gC .style_lake__8HnBa > i:after {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 7px;\n  left: 10px;\n  border-width: 8px 5px 8px 5px;\n  border-style: solid;\n  border-color: #555 transparent transparent transparent;\n}\n.style_select__Os_gC .style_dropDown__ZSRCu {\n  position: absolute;\n  padding: 5px 0;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n.style_select__Os_gC .style_option__g9LRZ {\n  padding: 3px 8px;\n  white-space: nowrap;\n  cursor: pointer;\n}\n.style_select__Os_gC .style_option__g9LRZ:hover {\n  background-color: #f5f5f5;\n}\n";
 var styl = {"select":"style_select__Os_gC","lake":"style_lake__8HnBa","dropDown":"style_dropDown__ZSRCu","option":"style_option__g9LRZ"};
-styleInject(css_248z$1);
+styleInject(css_248z$3);
 
 const Option = props => {
     const { value, children, lable, className, style } = props;
@@ -49517,20 +49612,20 @@ const renderSelect = (toolBarState, toolbarItem, key) => {
             : '')))))));
 };
 
-var css_248z$2 = ".style_lable__2qU9T {\n  display: inline-block;\n}\n.style_lable__2qU9T > em {\n  display: block;\n  width: 16px;\n  height: 2px;\n}\n.style_option__YhK-o {\n  font-size: 0;\n}\n.style_option__YhK-o:hover {\n  cursor: auto;\n  background-color: transparent !important;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 {\n  position: relative;\n  display: inline-block;\n  width: 25px;\n  height: 25px;\n  margin: 0 4px;\n  padding: 1px;\n  border-radius: 3px;\n  border: 1px solid transparent;\n}\n.style_option__YhK-o .style_colorItem__3Fi51:hover {\n  border-color: #fa541c;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span {\n  display: inline-block;\n  margin: 2px;\n  width: 21px;\n  height: 21px;\n  cursor: pointer;\n  border-radius: 3px;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span + span {\n  position: absolute;\n  color: white;\n  z-index: 99;\n  top: 2px;\n  left: 3px;\n}\n";
-var style$1 = {"lable":"style_lable__2qU9T","option":"style_option__YhK-o","colorItem":"style_colorItem__3Fi51"};
-styleInject(css_248z$2);
+var css_248z$4 = ".style_lable__2qU9T {\n  display: inline-block;\n}\n.style_lable__2qU9T > em {\n  display: block;\n  width: 16px;\n  height: 2px;\n}\n.style_option__YhK-o {\n  font-size: 0;\n}\n.style_option__YhK-o:hover {\n  cursor: auto;\n  background-color: transparent !important;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 {\n  position: relative;\n  display: inline-block;\n  width: 25px;\n  height: 25px;\n  margin: 0 4px;\n  padding: 1px;\n  border-radius: 3px;\n  border: 1px solid transparent;\n}\n.style_option__YhK-o .style_colorItem__3Fi51:hover {\n  border-color: #fa541c;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span {\n  display: inline-block;\n  margin: 2px;\n  width: 21px;\n  height: 21px;\n  cursor: pointer;\n  border-radius: 3px;\n}\n.style_option__YhK-o .style_colorItem__3Fi51 span + span {\n  position: absolute;\n  color: white;\n  z-index: 99;\n  top: 2px;\n  left: 3px;\n}\n";
+var style$3 = {"lable":"style_lable__2qU9T","option":"style_option__YhK-o","colorItem":"style_colorItem__3Fi51"};
+styleInject(css_248z$4);
 
 const ColorPanel = (props) => {
     const { disabled, change, areas, lable, icon, value, initValue = '#000000' } = props;
     const currentValue = value || initValue;
     const [selectColor, setColor] = React__default['default'].useState(currentValue);
     React__default['default'].useEffect(() => setColor(currentValue), [currentValue]);
-    const colorLable = (React__default['default'].createElement("span", { className: style$1.lable },
+    const colorLable = (React__default['default'].createElement("span", { className: style$3.lable },
         icon,
         React__default['default'].createElement("em", { style: { backgroundColor: selectColor } })));
-    return (React__default['default'].createElement(Select, { disabled: disabled, className: _classnames_2_2_6_classnames({ tooltip: !disabled }), initValue: initValue, value: currentValue, onChange: change, tooltip: lable, lable: colorLable }, areas.map(({ value }, idx) => (React__default['default'].createElement(Select.Option, { className: style$1.option, key: idx }, (v, setv) => {
-        return value.map((colorHex, i) => (React__default['default'].createElement("span", { className: style$1.colorItem, key: `${idx}-${i}`, onMouseDown: (e) => {
+    return (React__default['default'].createElement(Select, { disabled: disabled, className: _classnames_2_2_6_classnames({ tooltip: !disabled }), initValue: initValue, value: currentValue, onChange: change, tooltip: lable, lable: colorLable }, areas.map(({ value }, idx) => (React__default['default'].createElement(Select.Option, { className: style$3.option, key: idx }, (v, setv) => {
+        return value.map((colorHex, i) => (React__default['default'].createElement("span", { className: style$3.colorItem, key: `${idx}-${i}`, onMouseDown: (e) => {
                 e.preventDefault();
                 if (colorHex !== v) {
                     setv(colorHex);
@@ -49564,11 +49659,11 @@ const renderColorPanel = (toolBarState, toolbarItem, key) => {
     return (React__default['default'].createElement(ColorPanel, { key: key, disabled: disabled, initValue: initValue, value: currentValue, change: (s) => event.fire(`${action}`, `${type}-${s}`), areas: areas, lable: lable, icon: icon }));
 };
 
-var css_248z$3 = ".style_popover__2RxA8 {\n  position: relative;\n}\n.style_popover__2RxA8 .style_btn__1-e3m {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2RxA8 .style_dropDown__2LkP4 {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
-var style$2 = {"popover":"style_popover__2RxA8","btn":"style_btn__1-e3m","dropDown":"style_dropDown__2LkP4"};
-styleInject(css_248z$3);
+var css_248z$5 = ".style_popover__2RxA8 {\n  position: relative;\n}\n.style_popover__2RxA8 .style_btn__1-e3m {\n  padding: 0;\n  margin: 0;\n  border: none;\n  outline: none;\n  background-color: transparent;\n}\n.style_popover__2RxA8 .style_dropDown__2LkP4 {\n  cursor: auto;\n  padding: 5px 10px;\n  position: absolute;\n  top: 40px;\n  left: -8px;\n  border: 1px solid #e8e8e8;\n  background-color: white;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);\n  flex-direction: column;\n  justify-content: space-evenly;\n  z-index: 1000;\n}\n";
+var style$4 = {"popover":"style_popover__2RxA8","btn":"style_btn__1-e3m","dropDown":"style_dropDown__2LkP4"};
+styleInject(css_248z$5);
 
-const Popover = (props) => {
+const Popover$1 = (props) => {
     const { className, lable, icon, children, disabled = false, tooltip } = props;
     const popoverRef = React__default['default'].useRef(null);
     const [visible, setVisible] = React__default['default'].useState(false);
@@ -49597,25 +49692,25 @@ const Popover = (props) => {
             }
         };
     }, []);
-    return (React__default['default'].createElement("div", { ref: (ref) => popoverRef.current = ref, className: _classnames_2_2_6_classnames(className, style$2.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
+    return (React__default['default'].createElement("div", { ref: (ref) => popoverRef.current = ref, className: _classnames_2_2_6_classnames(className, style$4.popover, { tooltip: (!disabled && !visible) }), disabled: disabled, tooltip: tooltip, onMouseDown: (e) => {
             e.stopPropagation();
             setVisible(disabled ? false : !visible);
         } },
         icon,
-        React__default['default'].createElement("div", { className: style$2.dropDown, style: {
+        React__default['default'].createElement("div", { className: style$4.dropDown, style: {
                 display: `${visible ? "inline-flex" : "none"}`,
             }, onMouseDown: (e) => {
                 e.stopPropagation();
             } }, children)));
 };
 
-var css_248z$4 = ".style_input__Ohlyv {\n  display: inline-block;\n  color: rgba(0, 0, 0, 0.85);\n  font-size: 14px;\n  padding: 1px 8px;\n  line-height: 1.33;\n  border: 1px solid #d9d9d9;\n  border-radius: 2px;\n  transition: all 0.3s;\n}\n.style_input__Ohlyv:focus {\n  border-color: #40a9ff;\n  border-right-width: 1px!important;\n  outline: 0;\n  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);\n}\n";
-var style$3 = {"input":"style_input__Ohlyv"};
-styleInject(css_248z$4);
+var css_248z$6 = ".style_input__Ohlyv {\n  display: inline-block;\n  color: rgba(0, 0, 0, 0.85);\n  font-size: 14px;\n  padding: 1px 8px;\n  line-height: 1.33;\n  border: 1px solid #d9d9d9;\n  border-radius: 2px;\n  transition: all 0.3s;\n}\n.style_input__Ohlyv:focus {\n  border-color: #40a9ff;\n  border-right-width: 1px!important;\n  outline: 0;\n  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);\n}\n";
+var style$5 = {"input":"style_input__Ohlyv"};
+styleInject(css_248z$6);
 
 const Input = (props, ref) => {
     const { className, placeholder, onChange = () => { }, onBlur = () => { }, onFocus } = props;
-    return React__default['default'].createElement("input", { ref: ref, className: _classnames_2_2_6_classnames(className, style$3.input), onChange: onChange, onBlur: onBlur, onFocus: onFocus, placeholder: placeholder });
+    return React__default['default'].createElement("input", { ref: ref, className: _classnames_2_2_6_classnames(className, style$5.input), onChange: onChange, onBlur: onBlur, onFocus: onFocus, placeholder: placeholder });
 };
 var Input$1 = React__default['default'].forwardRef(Input);
 
@@ -49804,26 +49899,42 @@ const toolbar = [
         ],
         render: renderSelect
     },
-    {
-        action: 'addEntity',
-        type: 'popover',
-        initValue: JSON.stringify({ textAlign: 'left' }),
-        areas: [
-            { lable: '插入图片', icon: React__default['default'].createElement(Icon, { fontIcon: "\uE64A" }), value: 'image' },
-            { lable: '插入表格', icon: React__default['default'].createElement(Icon, { fontIcon: "\uE6CC" }), value: '' },
-            { lable: '插入公示', icon: React__default['default'].createElement(Icon, { fontIcon: "\uE600" }), value: '' },
-        ],
-        render: (toolBarState, toolbarItem, key) => {
-            const { event, stack, inlineStyles } = toolBarState;
-            const { action, areas } = toolbarItem;
-            return areas.map(({ icon, lable, }, idx) => React__default['default'].createElement(Popover, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
-                React__default['default'].createElement(Input$1, { onBlur: (e) => {
-                        const inputText = e.target.value;
-                        e.target.value = '';
-                        event.fire(`${action}`, inputText);
-                    } })));
+    [
+        {
+            action: 'addEntity',
+            type: 'popover',
+            initValue: JSON.stringify({ textAlign: 'left' }),
+            areas: [
+                { lable: '插入表格', icon: React__default['default'].createElement(Icon, { fontIcon: "\uE6CC" }), value: '' },
+            ],
+            render: rentable
+        }, {
+            action: 'addEntity',
+            type: 'popover',
+            initValue: JSON.stringify({ textAlign: 'left' }),
+            areas: [
+                { lable: '插入图片', icon: React__default['default'].createElement(Icon, { fontIcon: "\uE64A" }), value: 'image' },
+            ],
+            render: (toolBarState, toolbarItem, key) => {
+                const { event, stack, inlineStyles } = toolBarState;
+                const { action, areas } = toolbarItem;
+                return areas.map(({ icon, lable, }, idx) => React__default['default'].createElement(Popover$1, { key: `${key}-${idx}`, icon: icon, tooltip: lable },
+                    React__default['default'].createElement(Input$1, { onBlur: (e) => {
+                            const inputText = e.target.value;
+                            e.target.value = '';
+                            event.fire(`${action}`, inputText);
+                        } })));
+            }
+        }, {
+            action: 'addEntity',
+            type: 'popover',
+            initValue: JSON.stringify({ textAlign: 'left' }),
+            areas: [
+                { lable: '插入公示', icon: React__default['default'].createElement(Icon, { fontIcon: "\uE600" }), value: '' },
+            ],
+            render: () => { }
         }
-    }
+    ],
 ];
 const customStyleMap = {
     '12px': { fontSize: '12px' },
@@ -49846,9 +49957,9 @@ colors.forEach(({ value }) => {
     });
 });
 
-var css_248z$5 = ".style_page__2FnF3 {\n  display: flex;\n  height: 100%;\n  overflow: hidden;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  background-color: #f9f9f9;\n}\n.style_page__2FnF3 .style_main__3Jxot {\n  width: 100%;\n  overflow-y: auto;\n  padding-bottom: 64px;\n}\n.style_page__2FnF3 .style_main__3Jxot .style_editor__1Eryk {\n  border: 1px solid #e8e8e8;\n  border-radius: 3px;\n  box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);\n  width: 872px;\n  min-height: 1455px;\n  margin: 16px auto 0 auto;\n  padding: 20px 60px 90px 60px;\n  background-color: white;\n}\n";
-var style$4 = {"page":"style_page__2FnF3","main":"style_main__3Jxot","editor":"style_editor__1Eryk"};
-styleInject(css_248z$5);
+var css_248z$7 = ".style_page__2FnF3 {\n  display: flex;\n  height: 100%;\n  overflow: hidden;\n  flex-direction: column;\n  align-items: center;\n  position: relative;\n  background-color: #f9f9f9;\n}\n.style_page__2FnF3 .style_main__3Jxot {\n  width: 100%;\n  overflow-y: auto;\n  padding-bottom: 64px;\n}\n.style_page__2FnF3 .style_main__3Jxot .style_editor__1Eryk {\n  border: 1px solid #e8e8e8;\n  border-radius: 3px;\n  box-shadow: 0 2px 8px rgba(115, 115, 115, 0.08);\n  width: 872px;\n  min-height: 1455px;\n  margin: 16px auto 0 auto;\n  padding: 20px 60px 90px 60px;\n  background-color: white;\n}\n";
+var style$6 = {"page":"style_page__2FnF3","main":"style_main__3Jxot","editor":"style_editor__1Eryk"};
+styleInject(css_248z$7);
 
 const DoubleAEditor = (props, editorRef) => {
     if (typeof editorRef === 'function') {
@@ -49970,7 +50081,7 @@ const DoubleAEditor = (props, editorRef) => {
         }
         setEditorState(state);
     };
-    return (React__default['default'].createElement("div", { className: _classnames_2_2_6_classnames({ formatBrush: formatBrush }, style$4.editor), onClick: (e) => {
+    return (React__default['default'].createElement("div", { className: _classnames_2_2_6_classnames({ formatBrush: formatBrush }, style$6.editor), onClick: (e) => {
             const contentEditable = document.activeElement.contentEditable;
             if (contentEditable !== 'true') {
                 setTimeout(() => {
@@ -49982,9 +50093,9 @@ const DoubleAEditor = (props, editorRef) => {
 };
 var MyEditor = React__default['default'].forwardRef(DoubleAEditor);
 
-var css_248z$6 = ".style_editorToolbar__3gucq {\n  width: 100%;\n  height: 42px;\n  border: 1px solid #e8e8e8;\n  display: flex;\n  justify-content: center;\n  background-color: white;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);\n  position: sticky;\n  top: 0;\n}\n.style_editorToolbar__3gucq button {\n  background-color: white;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog {\n  height: 100%;\n  padding: 3px 0;\n  display: inline-block;\n  border-right: 1px solid #e8e8e8;\n  box-sizing: border-box;\n  vertical-align: middle;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog:nth-child(1) {\n  border-left: 1px solid #e8e8e8;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > * {\n  box-sizing: border-box;\n  display: inline-block;\n  height: 100%;\n  font-size: 16px;\n  margin: 0 5px;\n  padding: 5px 11px;\n  border: none;\n  border-radius: 5px;\n  outline: none;\n  cursor: pointer;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *:hover {\n  background-color: #f5f5f5;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[active='true'] {\n  color: #3cb034;\n  font-weight: bold;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[disabled] {\n  background-color: transparent;\n  opacity: 0.4;\n  text-shadow: none;\n  box-shadow: none;\n  cursor: not-allowed;\n}\n";
-var style$5 = {"editorToolbar":"style_editorToolbar__3gucq","barArea":"style_barArea__1hKog"};
-styleInject(css_248z$6);
+var css_248z$8 = ".style_editorToolbar__3gucq {\n  width: 100%;\n  height: 42px;\n  border: 1px solid #e8e8e8;\n  display: flex;\n  justify-content: center;\n  background-color: white;\n  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);\n  position: sticky;\n  top: 0;\n}\n.style_editorToolbar__3gucq button {\n  background-color: white;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog {\n  height: 100%;\n  padding: 3px 0;\n  display: inline-block;\n  border-right: 1px solid #e8e8e8;\n  box-sizing: border-box;\n  vertical-align: middle;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog:nth-child(1) {\n  border-left: 1px solid #e8e8e8;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > * {\n  box-sizing: border-box;\n  display: inline-block;\n  height: 100%;\n  font-size: 16px;\n  margin: 0 5px;\n  padding: 5px 11px;\n  border: none;\n  border-radius: 5px;\n  outline: none;\n  cursor: pointer;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *:hover {\n  background-color: #f5f5f5;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[active='true'] {\n  color: #3cb034;\n  font-weight: bold;\n}\n.style_editorToolbar__3gucq .style_barArea__1hKog > *[disabled] {\n  background-color: transparent;\n  opacity: 0.4;\n  text-shadow: none;\n  box-shadow: none;\n  cursor: not-allowed;\n}\n";
+var style$7 = {"editorToolbar":"style_editorToolbar__3gucq","barArea":"style_barArea__1hKog"};
+styleInject(css_248z$8);
 
 const ToolBar = (props) => {
     const { event, editorState, stack } = props;
@@ -50003,34 +50114,39 @@ const ToolBar = (props) => {
         .toJS();
     const renderToolBar = (tools) => {
         return tools.map((toolbarItem, idx) => {
+            const toolBarState = {
+                event,
+                stack,
+                inlineStyles,
+                blockType,
+                blockData
+            };
             if (Array.isArray(toolbarItem)) {
-                return renderToolBar(toolbarItem);
+                return (React__default['default'].createElement("div", { className: style$7.barArea, key: idx }, toolbarItem.map((barItem, i) => {
+                    const { render } = barItem;
+                    return typeof render === 'function'
+                        ? render(toolBarState, barItem, `${idx}-${i}`, false)
+                        : null;
+                })));
             }
             else {
                 const { render } = toolbarItem;
-                const toolBarState = {
-                    event,
-                    stack,
-                    inlineStyles,
-                    blockType,
-                    blockData
-                };
-                return (React__default['default'].createElement("div", { className: style$5.barArea, key: idx }, typeof render === 'function'
+                return (React__default['default'].createElement("div", { className: style$7.barArea, key: idx }, typeof render === 'function'
                     ? render(toolBarState, toolbarItem, idx, false)
                     : null));
             }
         });
     };
-    return (React__default['default'].createElement("div", { className: style$5.editorToolbar }, renderToolBar(toolbar)));
+    return (React__default['default'].createElement("div", { className: style$7.editorToolbar }, renderToolBar(toolbar)));
 };
 
-var css_248z$7 = ".style_panel__FdLdF {\n  width: 400px;\n  height: 240px;\n  border: 1px solid #ccc;\n  position: relative;\n}\n.style_panel__FdLdF .style_resizableR__2UVnq {\n  position: absolute;\n  right: 0;\n  top: 0;\n  width: 10px;\n  height: 100%;\n  background-color: aqua;\n  cursor: e-resize;\n}\n.style_panel__FdLdF .style_resizableB__1XAPb {\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 10px;\n  background-color: hotpink;\n  cursor: s-resize;\n}\n.style_panel__FdLdF .style_resizableRB__10iO- {\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  width: 20px;\n  height: 20px;\n  background-color: mediumpurple;\n  cursor: se-resize;\n}\n";
-var style$6 = {"panel":"style_panel__FdLdF","resizableR":"style_resizableR__2UVnq","resizableB":"style_resizableB__1XAPb","resizableRB":"style_resizableRB__10iO-"};
-styleInject(css_248z$7);
+var css_248z$9 = ".style_panel__FdLdF {\n  width: 400px;\n  height: 240px;\n  border: 1px solid #ccc;\n  position: relative;\n}\n.style_panel__FdLdF .style_resizableR__2UVnq {\n  position: absolute;\n  right: 0;\n  top: 0;\n  width: 10px;\n  height: 100%;\n  background-color: aqua;\n  cursor: e-resize;\n}\n.style_panel__FdLdF .style_resizableB__1XAPb {\n  position: absolute;\n  left: 0;\n  bottom: 0;\n  width: 100%;\n  height: 10px;\n  background-color: hotpink;\n  cursor: s-resize;\n}\n.style_panel__FdLdF .style_resizableRB__10iO- {\n  position: absolute;\n  right: 0;\n  bottom: 0;\n  width: 20px;\n  height: 20px;\n  background-color: mediumpurple;\n  cursor: se-resize;\n}\n";
+var style$8 = {"panel":"style_panel__FdLdF","resizableR":"style_resizableR__2UVnq","resizableB":"style_resizableB__1XAPb","resizableRB":"style_resizableRB__10iO-"};
+styleInject(css_248z$9);
 
-const rName = style$6.resizableR;
-const bName = style$6.resizableB;
-const rbName = style$6.resizableRB;
+const rName = style$8.resizableR;
+const bName = style$8.resizableB;
+const rbName = style$8.resizableRB;
 class Resizable {
     constructor(panelDom) {
         this.m_start_x = 0;
@@ -50150,7 +50266,7 @@ const Image = (props) => {
     const inlineStyle = {};
     width && (inlineStyle.width = width);
     height && (inlineStyle.height = height);
-    return React__default['default'].createElement("div", { ref: ref, className: _classnames_2_2_6_classnames(style$6.panel), style: inlineStyle },
+    return React__default['default'].createElement("div", { ref: ref, className: _classnames_2_2_6_classnames(style$8.panel), style: inlineStyle },
         React__default['default'].createElement("img", { style: { width: '100%' }, src: src }));
 };
 
@@ -50353,8 +50469,8 @@ var focusPlugin = (props) => {
     };
 };
 
-var css_248z$8 = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
-styleInject(css_248z$8);
+var css_248z$a = "html,\nbody {\n  margin: 0;\n  padding: 0;\n  height: 100%;\n}\nfigure {\n  padding: 0;\n  margin: 0;\n  line-height: 0;\n}\n#root {\n  overflow: auto;\n  height: 100%;\n}\n@font-face {\n  font-family: 'iconfont';\n  /* project id 1749590 */\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot');\n  src: url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.eot?#iefix') format('embedded-opentype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff2') format('woff2'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.woff') format('woff'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.ttf') format('truetype'), url('//at.alicdn.com/t/font_1749590_pinxwu32l5l.svg#iconfont') format('svg');\n}\n/* 编辑器的高度*/\n/*文字选中效果*/\n*::selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-moz-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n*::-webkit-selection {\n  background-color: #e1f0fe;\n  color: inherit;\n}\n.formatBrush {\n  cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAUCAYAAACTQC2+AAAABGdBTUEAALGPC/xhBQAAATtJREFUSA3dlTFLA0EQhU+jlSkEG63EYGdlZZFG7QUbSyG/QP/C/Q0rqzQWQX+BwUKwtrexEFRQtFSI35NZWDa3soOHhQ8eM/v2zWw2N9xVVVUdwXUYoFxaq5il2wa8hvtG5dJaxYx16xFvLN8i3lmehiFC6Y94wbsTGsxZosajKA/7aewjrKZiyTocJO9DSYHT82r+YXyQs0eRfYBrD/Y1DB58OMyfeM/hrWq8N9qlZkmFBXiPPd6D7ikWUxwjrKWirTeJkzDeNYttKIxhDUuxiFGjfAnfMkUX3hs19emYqFt9P48mU6zVLEQPFjCfwgk8gyuwEd6pS5t0EQYmHhCXLZ8Kvz1oqmFO+H8HxVOXfZC5vwNd46y3xbx5ni1mQ4+dJ6NyDw4xX0GN9484YfcRhg+fcmmt408+5V99wSyVTWN94gAAAABJRU5ErkJggg==) 5 10, text;\n}\n.tooltip {\n  position: relative;\n}\n.tooltip:hover:after {\n  content: attr(tooltip);\n  white-space: nowrap;\n  position: absolute;\n  top: 45px;\n  left: calc(50% - 17px);\n  background-color: #555;\n  padding: 8px 8px;\n  border-radius: 5px;\n  color: white;\n  font-size: 12px;\n  line-height: 1.5;\n}\n.tooltip:hover:before {\n  display: block;\n  content: '';\n  position: absolute;\n  top: 38px;\n  left: calc(50% - 5px);\n  border-width: 0 5px 8px 5px;\n  border-style: solid;\n  border-color: transparent transparent #555 transparent;\n}\n";
+styleInject(css_248z$a);
 
 const Index = () => {
     const state = Draft_4.createEmpty();
@@ -50375,9 +50491,9 @@ const Index = () => {
         editorState,
         setEditorState
     };
-    return (React__default['default'].createElement("div", { className: style$4.page },
+    return (React__default['default'].createElement("div", { className: style$6.page },
         React__default['default'].createElement(ToolBar, Object.assign({}, toolBarProps)),
-        React__default['default'].createElement("div", { className: style$4.main },
+        React__default['default'].createElement("div", { className: style$6.main },
             React__default['default'].createElement(MyEditor, Object.assign({ ref: editorRef }, editorProps)))));
 };
 

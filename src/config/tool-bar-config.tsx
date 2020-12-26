@@ -3,6 +3,7 @@ import Immutable from 'immutable'
 import _ from 'lodash'
 import BlockWrapper from '../component/block-wrapper'
 import Icon from '../component/icon'
+import rentable from '../plugin/table-plugin/menu-bar'
 import {renderBut, renderSelect, renderColorPanel} from './render-tool-item'
 
 import Popover from '../component/popover'
@@ -212,36 +213,52 @@ export const toolbar: Itoolbar = [
       {lable: '右对齐', icon: <Icon fontIcon="&#xe6cd;" />, value: JSON.stringify({textAlign: 'right'})},
     ],
     render: renderSelect
-  }, 
-  {
-    action: 'addEntity',
-    type: 'popover',
-    initValue: JSON.stringify({textAlign: 'left'}),
-    areas: [
-      {lable: '插入图片', icon: <Icon fontIcon="&#xe64a;" />, value: 'image'},
-      {lable: '插入表格', icon: <Icon fontIcon="&#xe6cc;" />, value: ''},
-      {lable: '插入公示', icon: <Icon fontIcon="&#xe600;" />, value: ''},
-    ],
-    render: (toolBarState, toolbarItem, key) => {
-      const {event, stack, inlineStyles} = toolBarState
-      const {action, areas} = toolbarItem
-
-      return areas.map(
-        ({icon, lable,}, idx) => 
-          <Popover 
-            key={`${key}-${idx}`} 
-            icon={icon} 
-            tooltip={lable}
-          >
-            <Input onBlur={(e) => {
-              const inputText = e.target.value
-              e.target.value = ''
-              event.fire(`${action}`, inputText)
-            }} />
-          </Popover>
-      )
+  },
+  [
+    {
+      action: 'addEntity',
+      type: 'popover',
+      initValue: JSON.stringify({textAlign: 'left'}),
+      areas: [
+        {lable: '插入表格', icon: <Icon fontIcon="&#xe6cc;" />, value: ''},
+      ],
+      render: rentable
+    }, {
+      action: 'addEntity',
+      type: 'popover',
+      initValue: JSON.stringify({textAlign: 'left'}),
+      areas: [
+        {lable: '插入图片', icon: <Icon fontIcon="&#xe64a;" />, value: 'image'},
+      ],
+      render: (toolBarState, toolbarItem, key) => {
+        const {event, stack, inlineStyles} = toolBarState
+        const {action, areas} = toolbarItem
+      
+        return areas.map(
+          ({icon, lable,}, idx) => 
+            <Popover 
+              key={`${key}-${idx}`} 
+              icon={icon} 
+              tooltip={lable}
+            >
+              <Input onBlur={(e) => {
+                const inputText = e.target.value
+                e.target.value = ''
+                event.fire(`${action}`, inputText)
+              }} />
+            </Popover>
+        )
+      }
+    }, {
+      action: 'addEntity',
+      type: 'popover',
+      initValue: JSON.stringify({textAlign: 'left'}),
+      areas: [
+        {lable: '插入公示', icon: <Icon fontIcon="&#xe600;" />, value: ''},
+      ],
+      render: ()=>{}
     }
-  }
+  ], 
 ]
 
 // 自定义行内样式的定义，使用toggleInlineStyle更换不同的key

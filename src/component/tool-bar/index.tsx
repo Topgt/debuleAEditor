@@ -22,17 +22,26 @@ const ToolBar: React.FC<IToolBar> = (props) => {
 
   const renderToolBar = (tools: Itoolbar) => {
     return tools.map((toolbarItem, idx) => {
+      const toolBarState = {
+        event,
+        stack,
+        inlineStyles,
+        blockType,
+        blockData
+      }
       if (Array.isArray(toolbarItem)) {
-        return renderToolBar(toolbarItem)
+        return (<div className={style.barArea} key={idx}>
+          {
+            toolbarItem.map((barItem, i) => {
+              const { render } = barItem
+              return typeof render === 'function'
+                ? render(toolBarState, barItem, `${idx}-${i}`, false)
+                : null
+            })
+          }
+        </div>)
       } else {
         const { render } = toolbarItem
-        const toolBarState = {
-          event,
-          stack,
-          inlineStyles,
-          blockType,
-          blockData
-        }
         return (<div className={style.barArea} key={idx}>
           {
             typeof render === 'function'
